@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="creme">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perfect Skin Fashion — Made in Italy · Hamburg</title>
+  <meta name="description" content="Perfect Skin Fashion — hochwertige, junge Mode aus Italien, in Hamburg noch nicht zu haben. Limitierte Teile, Bademode und dein eigenes Design zum Bedrucken. Shop mit Live-Vorschauen aus Instagram & Facebook.">
+  <meta name="theme-color" content="#ff4d6d">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta property="og:title" content="Perfect Skin Fashion — Made in Italy · Hamburg">
+  <meta property="og:description" content="Junge, hochwertige Mode aus Italien. Limitiert. Mit eigenem Design zum Bedrucken.">
+  <meta property="og:type" content="website">
+  <link rel="preload" href="assets/fonts/Lato-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/AbrilFatface-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ===== INTRO (Regenbogen-Schleife) ===== -->
+  <div class="intro" id="intro" aria-hidden="true">
+    <span class="intro__ribbon a"></span>
+    <span class="intro__ribbon b"></span>
+    <span class="intro__ribbon c"></span>
+    <div class="intro__brand">
+      <h1>Perfect Skin Fashion</h1>
+      <p data-i18n="intro_sub">Beauty · Fashion · Hamburg</p>
+    </div>
+  </div>
+
+  <!-- ===== Regenbogen-Rahmen (bleibt als Zierrahmen) ===== -->
+  <div class="rainbow-frame" aria-hidden="true"></div>
+
+  <!-- ===== Bewegter Hintergrund ===== -->
+  <div class="bg-aurora" aria-hidden="true"><span></span><span></span><span></span></div>
+
+  <!-- ===== TOPBAR: Sprache + Design ===== -->
+  <div class="topbar">
+    <div class="topbar__inner">
+      <div class="pillrow" role="group" aria-label="Sprache">
+        <span class="topbar__label">
+          <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm7.9 9h-3.5a15.7 15.7 0 0 0-1.2-5.4A8 8 0 0 1 19.9 11ZM12 4c.9 1.2 1.9 3.4 2.2 7H9.8C10.1 7.4 11.1 5.2 12 4ZM4.1 13h3.5c.1 2 .5 3.8 1.2 5.4A8 8 0 0 1 4.1 13Zm3.5-2H4.1a8 8 0 0 1 4.7-5.4A15.7 15.7 0 0 0 7.6 11Zm4.4 9c-.9-1.2-1.9-3.4-2.2-7h4.4c-.3 3.6-1.3 5.8-2.2 7Zm3.3-1.6c.6-1.6 1-3.4 1.2-5.4h3.5a8 8 0 0 1-4.7 5.4Z"/></svg>
+        </span>
+        <button class="pill lang-btn is-active" data-lang="de">DE</button>
+        <button class="pill lang-btn" data-lang="en">EN</button>
+        <button class="pill lang-btn" data-lang="ru">RU</button>
+        <button class="pill lang-btn" data-lang="es">ES</button>
+      </div>
+      <div class="pillrow" role="group" aria-label="Design">
+        <button class="pill pill--swatch theme-btn is-active" data-theme-pick="creme"><i style="background:#fbf9f6"></i><i style="background:#ff4d6d"></i>Crème</button>
+        <button class="pill pill--swatch theme-btn" data-theme-pick="mokka"><i style="background:#141010"></i><i style="background:#ffb347"></i>Mokka</button>
+        <button class="pill pill--swatch theme-btn" data-theme-pick="neon"><i style="background:#0d0b1a"></i><i style="background:#ff2ec4"></i>Neon</button>
+        <button class="pill pill--swatch theme-btn" data-theme-pick="pastel"><i style="background:#fff7fb"></i><i style="background:#ff86b3"></i>Pastell</button>
+        <button class="pill pill--swatch theme-btn" data-theme-pick="mono"><i style="background:#fff"></i><i style="background:#111"></i>Mono</button>
+        <button class="pill" id="hard-reload" title="Hard Reload">⟳</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== HEADER / NAV ===== -->
+  <header class="header" id="top">
+    <div class="header__inner">
+      <a class="logo" href="#top" aria-label="Perfect Skin Fashion">
+        <span class="logo__mark">PSF</span>
+        <span>
+          <span class="logo__title">Perfect Skin Fashion</span><br>
+          <span class="logo__sub">Made in Italy · Hamburg</span>
+        </span>
+      </a>
+      <nav class="nav">
+        <a class="nav__link" href="#new" data-i18n="nav_new">Neu</a>
+        <a class="nav__link" href="#new" data-i18n="nav_women">Damen</a>
+        <a class="nav__link" href="#new" data-i18n="nav_men">Herren</a>
+        <a class="nav__link" href="design-studio.html" data-i18n="nav_design">Eigenes Design</a>
+        <a class="nav__link" href="#reels" data-i18n="nav_reels">Videos</a>
+        <a class="nav__link" href="#contact" data-i18n="nav_contact">Kontakt</a>
+      </nav>
+      <div class="nav__actions">
+        <button class="cart-btn" aria-label="Warenkorb">
+          <svg viewBox="0 0 24 24"><path d="M7 4h-2l-1 2v0M6 6h15l-1.5 9h-12L6 6Zm2 13a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Zm9 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+          <span class="cart-count">0</span>
+        </button>
+        <button class="burger" aria-label="Menü"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== MOBILE NAV ===== -->
+  <nav class="mnav" id="mnav">
+    <a href="#new" data-i18n="nav_new">Neu</a>
+    <a href="#new" data-i18n="nav_women">Damen</a>
+    <a href="#new" data-i18n="nav_men">Herren</a>
+    <a href="design-studio.html" data-i18n="nav_design">Eigenes Design</a>
+    <a href="#reels" data-i18n="nav_reels">Videos</a>
+    <a href="#contact" data-i18n="nav_contact">Kontakt</a>
+  </nav>
+
+  <main>
+    <!-- ===== HERO ===== -->
+    <section class="hero wrap">
+      <div class="hero__grid">
+        <div>
+          <p class="eyebrow hero__eyebrow" data-i18n="hero_eyebrow">Neu in Hamburg · Made in Italy</p>
+          <h1 class="hero__title"><span data-i18n="hero_title_a">Mode, die es hier</span> <em data-i18n="hero_title_em">so noch nicht gibt.</em></h1>
+          <p class="hero__text" data-i18n="hero_text">Hochwertige, junge Bekleidung – in Italien handverlesen. Fresh, modern, limitiert. Und wenn du willst: mit deinem ganz eigenen Design.</p>
+          <div class="hero__cta">
+            <a class="btn3d btn3d--float" href="#new" data-i18n="hero_shop">Kollektion ansehen</a>
+            <a class="btn3d btn3d--ghost" href="design-studio.html" data-i18n="hero_design">Selbst gestalten</a>
+          </div>
+          <div class="hero__stats">
+            <div class="hero__stat"><b>20+</b><span data-i18n="stat_new">neue Teile / Woche</span></div>
+            <div class="hero__stat"><b>🇮🇹</b><span data-i18n="stat_it">Einkauf in Italien</span></div>
+            <div class="hero__stat"><b>48h</b><span data-i18n="stat_ship">Versand DE</span></div>
+          </div>
+        </div>
+        <div class="hero__stage">
+          <div class="hero__card hero__card--1"><div class="ph" style="background:linear-gradient(150deg,#ff4d6d,#a24dff)"><span>Blazer Milano<small>PSF · Foto folgt</small></span></div></div>
+          <div class="hero__card hero__card--2"><div class="ph" style="background:linear-gradient(150deg,#4d9bff,#4dd0a0)"><span>Bikini Riviera<small>PSF · Foto folgt</small></span></div></div>
+          <div class="hero__card hero__card--3"><div class="ph" style="background:linear-gradient(150deg,#ffd84d,#ff9e43)"><span>Dein Design<small>PSF · Foto folgt</small></span></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== TICKER ===== -->
+    <div class="ticker"><div class="ticker__track">
+      <span data-i18n="ticker">Neu eingetroffen · Made in Italy · Limitierte Stücke · Eigenes Design · Kostenloser Versand ab 79€</span>
+      <span data-i18n="ticker">Neu eingetroffen · Made in Italy · Limitierte Stücke · Eigenes Design · Kostenloser Versand ab 79€</span>
+    </div></div>
+
+    <!-- ===== NEU / PRODUKTE ===== -->
+    <section class="sec wrap" id="new">
+      <div class="sec__head">
+        <div>
+          <p class="eyebrow" data-i18n="new_title">Frisch eingetroffen</p>
+          <h2 class="sec__title" data-i18n="new_title">Frisch eingetroffen</h2>
+          <p class="sec__sub" data-i18n="new_sub">Die neuesten Teile aus unserem Italien-Einkauf – solange der Vorrat reicht.</p>
+        </div>
+      </div>
+      <div class="filters">
+        <button class="chip is-active" data-filter="all" data-i18n="f_all">Alles</button>
+        <button class="chip" data-filter="women" data-i18n="f_women">Damen</button>
+        <button class="chip" data-filter="men" data-i18n="f_men">Herren</button>
+        <button class="chip" data-filter="swim" data-i18n="f_swim">Bademode</button>
+        <button class="chip" data-filter="acc" data-i18n="f_acc">Accessoires</button>
+        <button class="chip" data-filter="design" data-i18n="f_design">Eigenes Design</button>
+      </div>
+      <div class="grid" id="product-grid"></div>
+    </section>
+
+    <!-- ===== DESIGN-STUDIO-BANNER ===== -->
+    <section class="sec">
+      <div class="studio">
+        <div class="studio__inner">
+          <div>
+            <p class="eyebrow" style="color:var(--accent)" data-i18n="studio_eyebrow">Design-Studio</p>
+            <h2 data-i18n="studio_title">Trag dein eigenes Design.</h2>
+            <p data-i18n="studio_text">Wähle ein Teil, lade dein Motiv hoch oder gestalte ein Muster – Vorschau in Echtzeit, hochwertig bedruckt. Kein plumper Standard-Druck, sondern dein Stil.</p>
+            <a class="btn3d btn3d--float" href="design-studio.html" data-i18n="studio_cta">Zum Design-Studio</a>
+          </div>
+          <div class="studio__art" aria-hidden="true"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== VIDEO / SOCIAL ===== -->
+    <section class="sec wrap" id="reels">
+      <div class="sec__head">
+        <div>
+          <p class="eyebrow" data-i18n="reels_eyebrow">Video & Social</p>
+          <h2 class="sec__title" data-i18n="reels_title">Was gibt es Neues?</h2>
+          <p class="sec__sub" data-i18n="reels_sub">Kurze Clips zu den neuesten Teilen – automatisch aus unseren Kanälen. Tippen zum Ansehen.</p>
+        </div>
+      </div>
+      <div class="reels" id="reels-grid"></div>
+      <div class="social-row">
+        <span class="topbar__label" style="align-self:center" data-i18n="social_follow">Folge uns für neue Drops</span>
+        <a class="social-link" href="https://www.instagram.com/" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M12 2c2.7 0 3.1 0 4.1.1 1.1 0 1.8.2 2.5.5.6.2 1.1.5 1.6 1s.8 1 1 1.6c.3.6.4 1.4.5 2.5C22 8.9 22 9.3 22 12s0 3.1-.1 4.1c0 1.1-.2 1.8-.5 2.5-.2.6-.5 1.1-1 1.6s-1 .8-1.6 1c-.6.3-1.4.4-2.5.5-1 .1-1.4.1-4.1.1s-3.1 0-4.1-.1c-1.1 0-1.8-.2-2.5-.5-.6-.2-1.1-.5-1.6-1s-.8-1-1-1.6c-.3-.6-.4-1.4-.5-2.5C2 15.1 2 14.7 2 12s0-3.1.1-4.1c0-1.1.2-1.8.5-2.5.2-.6.5-1.1 1-1.6s1-.8 1.6-1c.6-.3 1.4-.4 2.5-.5C8.9 2 9.3 2 12 2Zm0 5a5 5 0 1 0 0 10 5 5 0 0 0 0-10Zm0 8.2a3.2 3.2 0 1 1 0-6.4 3.2 3.2 0 0 1 0 6.4Zm5.3-9.5a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4Z"/></svg>Instagram</a>
+        <a class="social-link" href="https://www.facebook.com/" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.3v7A10 10 0 0 0 22 12Z"/></svg>Facebook</a>
+        <a class="social-link" href="https://t.me/kontakt_AliS" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M21.9 4.3 18.7 19.5c-.2 1-.9 1.3-1.8.8l-5-3.7-2.4 2.3c-.3.3-.5.5-1 .5l.3-4.9 9-8.1c.4-.3-.1-.5-.6-.2L6.1 13.4l-4.8-1.5c-1-.3-1-1 .2-1.5l18.7-7.2c.9-.3 1.6.2 1.4 1.1Z"/></svg>Telegram</a>
+      </div>
+    </section>
+
+    <!-- ===== USP ===== -->
+    <section class="sec wrap">
+      <h2 class="sec__title" style="margin-bottom:24px" data-i18n="usp_title">Warum Perfect Skin Fashion</h2>
+      <div class="usp">
+        <div class="usp__item"><div class="ic">🇮🇹</div><b data-i18n="usp1_t">Italien-Einkauf</b><p data-i18n="usp1_x">Handverlesen, hochwertig, in Hamburg noch nicht zu haben.</p></div>
+        <div class="usp__item"><div class="ic">✨</div><b data-i18n="usp2_t">Limitiert</b><p data-i18n="usp2_x">Kleine Mengen, häufige Wechsel – du trägst nicht, was alle tragen.</p></div>
+        <div class="usp__item"><div class="ic">🎨</div><b data-i18n="usp3_t">Eigenes Design</b><p data-i18n="usp3_x">Bedruck dein Teil mit eigenem Motiv oder Muster.</p></div>
+        <div class="usp__item"><div class="ic">🚚</div><b data-i18n="usp4_t">Schnell & sicher</b><p data-i18n="usp4_x">Versand innerhalb DE, sichere Bezahlung, faire Rückgabe.</p></div>
+      </div>
+    </section>
+
+    <!-- ===== NEWSLETTER ===== -->
+    <section class="sec">
+      <div class="news">
+        <h2 data-i18n="news_title">Kein Drop verpassen</h2>
+        <p style="color:rgba(255,255,255,.8);margin-top:8px" data-i18n="news_text">Neue Teile zuerst sehen – trag dich ein.</p>
+        <form id="news-form">
+          <input type="email" required data-i18n-ph="news_ph" placeholder="Deine E-Mail">
+          <button class="btn3d" type="submit" data-i18n="news_btn">Anmelden</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ===== KONTAKT ===== -->
+    <section class="sec wrap" id="contact">
+      <div class="sec__head">
+        <div>
+          <p class="eyebrow" data-i18n="contact_title">Kontakt & Laden</p>
+          <h2 class="sec__title" data-i18n="contact_title">Kontakt & Laden</h2>
+          <p class="sec__sub" data-i18n="contact_sub">Perfect Skin – Beauty & Fashion, Hamburg.</p>
+        </div>
+      </div>
+      <div class="usp">
+        <div class="usp__item"><div class="ic">📍</div><b data-i18n="co_addr">Adresse</b><p><a href="https://www.google.com/maps/dir/?api=1&destination=53.5363949,10.0321941" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none">Hardenstraße 51, 20539 Hamburg</a></p></div>
+        <div class="usp__item"><div class="ic">📞</div><b data-i18n="co_phone">Telefon</b><p><a href="tel:+491603212983" style="color:var(--accent);text-decoration:none">+49 160 3212 983</a></p></div>
+        <div class="usp__item"><div class="ic">✉️</div><b data-i18n="co_mail">E-Mail</b><p><a href="mailto:kontakt.bisnes@gmail.com" style="color:var(--accent);text-decoration:none">kontakt.bisnes@gmail.com</a></p></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer">
+    <div class="footer__inner">
+      <div>
+        <div class="logo" style="margin-bottom:12px"><span class="logo__mark">PSF</span><span class="logo__title">Perfect Skin Fashion</span></div>
+        <p style="max-width:34ch">Made in Italy · Hamburg — junge, hochwertige Mode & dein eigenes Design.</p>
+      </div>
+      <div>
+        <h4 data-i18n="ft_shop">Shop</h4>
+        <a href="#new" data-i18n="nav_new">Neu</a>
+        <a href="#new" data-i18n="nav_women">Damen</a>
+        <a href="#new" data-i18n="nav_men">Herren</a>
+        <a href="design-studio.html" data-i18n="nav_design">Eigenes Design</a>
+      </div>
+      <div>
+        <h4 data-i18n="ft_legal">Rechtliches</h4>
+        <a href="impressum.html" data-i18n="ft_impressum">Impressum</a>
+        <a href="impressum.html#datenschutz" data-i18n="ft_privacy">Datenschutz</a>
+        <a href="impressum.html#agb" data-i18n="ft_agb">AGB</a>
+        <a href="warehouse.html" data-i18n="warehouse" style="opacity:.6">Warenwirtschaft (intern)</a>
+      </div>
+    </div>
+    <div class="footer__bottom"><span data-i18n="ft_copy">© 2026 Perfect Skin Fashion · Hamburg. Alle Rechte vorbehalten.</span></div>
+  </footer>
+
+  <!-- ===== WARENKORB-DRAWER ===== -->
+  <div class="overlay" id="overlay"></div>
+  <aside class="drawer" id="drawer" aria-label="Warenkorb">
+    <div class="drawer__head"><h3 data-i18n="cart_title">Warenkorb</h3><button class="drawer__close" aria-label="close">&times;</button></div>
+    <div class="drawer__body"></div>
+    <div class="drawer__foot">
+      <div class="drawer__total"><span data-i18n="cart_total">Summe</span><span>0,00 €</span></div>
+      <button class="btn3d" data-checkout data-i18n="checkout">Zur Kasse</button>
+    </div>
+  </aside>
+
+  <!-- ===== PRODUKT-MODAL ===== -->
+  <div class="modal" id="modal" aria-label="Produkt"><div class="modal__card"></div></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="creme">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Design-Studio — Perfect Skin Fashion</title>
+  <meta name="description" content="Gestalte dein eigenes Kleidungsstück: Motiv hochladen, Text und Muster hinzufügen, Farbe wählen – Live-Vorschau, hochwertig bedruckt.">
+  <meta name="theme-color" content="#ff4d6d">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .studio-wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:30px;align-items:start}
+    .stage{position:sticky;top:80px;background:var(--card);border:1px solid var(--line);
+      border-radius:var(--radius-lg);padding:22px;box-shadow:var(--shadow-sm)}
+    .canvas{position:relative;aspect-ratio:4/5;border-radius:var(--radius);overflow:hidden;
+      background:var(--section);display:grid;place-items:center;touch-action:none}
+    .garment{position:absolute;inset:0;width:100%;height:100%}
+    .printarea{position:absolute;left:28%;top:24%;width:44%;height:46%;
+      border:1.5px dashed color-mix(in srgb,var(--ink) 22%,transparent);border-radius:8px;overflow:hidden}
+    .design{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);cursor:grab;
+      max-width:96%;user-select:none;will-change:transform;text-align:center}
+    .design.dragging{cursor:grabbing}
+    .design img{max-width:180px;pointer-events:none;display:block}
+    .design .txt{font-weight:800;line-height:1.05;white-space:pre-wrap;pointer-events:none;
+      font-family:var(--font-head)}
+    .panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+      padding:18px 20px;margin-bottom:16px}
+    .panel h3{font-size:16px;font-family:var(--font-body);font-weight:800;color:var(--ink);margin-bottom:12px;
+      display:flex;align-items:center;gap:8px}
+    .opts{display:flex;gap:8px;flex-wrap:wrap}
+    .gopt{padding:9px 14px;border-radius:100px;border:1px solid var(--line);background:var(--card);
+      font-weight:700;font-size:13.5px;color:var(--body);transition:.15s}
+    .gopt.sel{background:var(--ink);color:var(--page);border-color:var(--ink)}
+    .field{display:block;margin:10px 0}
+    .field label{font-size:12.5px;color:var(--body);display:block;margin-bottom:5px;font-weight:700}
+    .field input[type=text],.field select,.field textarea{width:100%;padding:11px 13px;border-radius:10px;
+      border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:14.5px;font-family:inherit}
+    .field textarea{resize:vertical;min-height:52px}
+    input[type=range]{width:100%;accent-color:var(--accent)}
+    .rng{display:flex;align-items:center;gap:10px}
+    .rng span{font-size:12px;color:var(--body);min-width:36px;text-align:right}
+    .upload{border:1.5px dashed var(--line);border-radius:12px;padding:18px;text-align:center;cursor:pointer;
+      transition:.2s;display:block}
+    .upload:hover{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 6%,transparent)}
+    .presets{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+    .preset{aspect-ratio:1;border-radius:10px;border:1px solid var(--line);cursor:pointer;overflow:hidden;
+      transition:.15s;background-size:cover}
+    .preset:hover{transform:translateY(-2px);border-color:var(--accent)}
+    .price-row{display:flex;justify-content:space-between;align-items:center;margin:6px 0 12px}
+    .price-row b{font-family:var(--font-head);font-size:26px;color:var(--ink)}
+    .swrow{display:flex;gap:7px;flex-wrap:wrap}
+    .sw{width:26px;height:26px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15);cursor:pointer;transition:.15s}
+    .sw:hover{transform:scale(1.12)}
+    .sw.sel{box-shadow:0 0 0 2px var(--card),0 0 0 3.5px var(--ink)}
+    @media(max-width:920px){.studio-wrap{grid-template-columns:1fr}.stage{position:static}}
+  </style>
+</head>
+<body>
+  <div class="rainbow-frame on" aria-hidden="true"></div>
+  <div class="bg-aurora" aria-hidden="true"><span></span><span></span><span></span></div>
+
+  <div class="topbar"><div class="topbar__inner">
+    <a class="logo" href="index.html" style="text-decoration:none"><span class="logo__mark">PSF</span>
+      <span class="logo__title" style="font-size:17px">Design-Studio</span></a>
+    <div class="pillrow">
+      <button class="pill lang-btn is-active" data-lang="de">DE</button>
+      <button class="pill lang-btn" data-lang="en">EN</button>
+      <button class="pill lang-btn" data-lang="ru">RU</button>
+      <button class="pill lang-btn" data-lang="es">ES</button>
+      <a class="pill" href="index.html" style="text-decoration:none">← Shop</a>
+    </div>
+  </div></div>
+
+  <main class="wrap" style="padding-top:26px;padding-bottom:60px">
+    <p class="eyebrow" data-i18n="eyebrow">Design-Studio</p>
+    <h1 style="font-size:clamp(30px,5vw,52px);margin:6px 0 6px" data-i18n="title">Gestalte dein Teil.</h1>
+    <p class="muted" style="max-width:60ch;margin-bottom:26px" data-i18n="sub">Wähle ein Kleidungsstück, lade dein Motiv hoch oder füge Text und Muster hinzu. Ziehe das Design mit dem Finger/der Maus an die richtige Stelle. Vorschau in Echtzeit.</p>
+
+    <div class="studio-wrap">
+      <!-- LIVE-VORSCHAU -->
+      <div class="stage">
+        <div class="canvas" id="canvas">
+          <svg class="garment" id="garment" viewBox="0 0 400 500" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="printarea" id="printarea">
+            <div class="design" id="design"><div class="txt" id="dtext" style="display:none"></div><img id="dimg" style="display:none" alt=""></div>
+          </div>
+        </div>
+        <p class="muted" style="font-size:12.5px;text-align:center;margin-top:12px" data-i18n="hint">✋ Design ziehen zum Verschieben · Regler für Größe & Drehung</p>
+      </div>
+
+      <!-- STEUERUNG -->
+      <div>
+        <div class="panel">
+          <h3>👕 <span data-i18n="p_garment">Kleidungsstück</span></h3>
+          <div class="opts" id="garment-opts"></div>
+          <div class="field" style="margin-top:14px">
+            <label data-i18n="p_color">Farbe des Teils</label>
+            <div class="swrow" id="garment-colors"></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>🖼️ <span data-i18n="p_motif">Dein Motiv</span></h3>
+          <label class="upload" for="file"><b data-i18n="p_upload">Bild hochladen</b><br><span class="muted" style="font-size:12.5px" data-i18n="p_upload_x">PNG/JPG · dein Foto oder Logo</span></label>
+          <input type="file" id="file" accept="image/*" hidden>
+          <div class="field"><label data-i18n="p_or">…oder Muster wählen</label>
+            <div class="presets" id="presets"></div>
+          </div>
+          <button class="gopt" id="clear-motif" style="margin-top:10px" data-i18n="p_clear">Motiv entfernen</button>
+        </div>
+
+        <div class="panel">
+          <h3>🔤 <span data-i18n="p_text">Text</span></h3>
+          <div class="field"><textarea id="text-in" data-i18n-ph="p_text_ph" placeholder="Dein Text (leer lassen für kein Text)"></textarea></div>
+          <div class="field"><label data-i18n="p_textcolor">Textfarbe</label><div class="swrow" id="text-colors"></div></div>
+        </div>
+
+        <div class="panel">
+          <h3>🎚️ <span data-i18n="p_adjust">Anpassen</span></h3>
+          <div class="field"><label data-i18n="p_size">Größe</label><div class="rng"><input type="range" id="scale" min="40" max="160" value="100"><span id="scale-v">100%</span></div></div>
+          <div class="field"><label data-i18n="p_rotate">Drehung</label><div class="rng"><input type="range" id="rotate" min="-45" max="45" value="0"><span id="rotate-v">0°</span></div></div>
+        </div>
+
+        <div class="panel">
+          <h3>🛒 <span data-i18n="p_order">Bestellen</span></h3>
+          <div class="price-row"><span class="muted" data-i18n="p_incl">inkl. Druck</span><b id="price">35,00 €</b></div>
+          <div class="field"><label data-i18n="p_psize">Größe</label>
+            <div class="opts" id="size-opts"></div>
+          </div>
+          <button class="btn3d" id="add" style="width:100%;justify-content:center;margin-top:6px" data-i18n="p_add">In den Warenkorb</button>
+          <p class="muted" style="font-size:12px;margin-top:10px" data-i18n="p_note">Probephase – die Kasse folgt in Kürze. Dein Entwurf wird im Warenkorb gespeichert.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="toasts"></div>
+
+  <script>
+  (function(){
+    "use strict";
+    const T = {
+      de:{eyebrow:"Design-Studio",title:"Gestalte dein Teil.",sub:"Wähle ein Kleidungsstück, lade dein Motiv hoch oder füge Text und Muster hinzu. Ziehe das Design an die richtige Stelle. Vorschau in Echtzeit.",hint:"✋ Design ziehen zum Verschieben · Regler für Größe & Drehung",p_garment:"Kleidungsstück",p_color:"Farbe des Teils",p_motif:"Dein Motiv",p_upload:"Bild hochladen",p_upload_x:"PNG/JPG · dein Foto oder Logo",p_or:"…oder Muster wählen",p_clear:"Motiv entfernen",p_text:"Text",p_text_ph:"Dein Text (leer lassen für kein Text)",p_textcolor:"Textfarbe",p_adjust:"Anpassen",p_size:"Größe",p_rotate:"Drehung",p_order:"Bestellen",p_incl:"inkl. Druck",p_psize:"Größe",p_add:"In den Warenkorb",p_note:"Probephase – die Kasse folgt in Kürze. Dein Entwurf wird im Warenkorb gespeichert.",added:"Zum Warenkorb hinzugefügt",g_shirt:"T-Shirt",g_hoodie:"Hoodie",g_tote:"Tasche",g_cap:"Cap"},
+      en:{eyebrow:"Design Studio",title:"Design your piece.",sub:"Pick a garment, upload your artwork or add text and patterns. Drag the design into place. Real-time preview.",hint:"✋ Drag the design to move · sliders for size & rotation",p_garment:"Garment",p_color:"Garment colour",p_motif:"Your artwork",p_upload:"Upload image",p_upload_x:"PNG/JPG · your photo or logo",p_or:"…or pick a pattern",p_clear:"Remove artwork",p_text:"Text",p_text_ph:"Your text (leave empty for none)",p_textcolor:"Text colour",p_adjust:"Adjust",p_size:"Size",p_rotate:"Rotation",p_order:"Order",p_incl:"print incl.",p_psize:"Size",p_add:"Add to cart",p_note:"Trial phase – checkout coming soon. Your design is saved in the cart.",added:"Added to cart",g_shirt:"T-Shirt",g_hoodie:"Hoodie",g_tote:"Bag",g_cap:"Cap"},
+      ru:{eyebrow:"Дизайн-студия",title:"Создай свою вещь.",sub:"Выбери вещь, загрузи макет или добавь текст и узоры. Перетащи дизайн на место. Предпросмотр в реальном времени.",hint:"✋ Перетащи дизайн · ползунки для размера и поворота",p_garment:"Вещь",p_color:"Цвет вещи",p_motif:"Твой макет",p_upload:"Загрузить изображение",p_upload_x:"PNG/JPG · фото или логотип",p_or:"…или выбери узор",p_clear:"Убрать макет",p_text:"Текст",p_text_ph:"Твой текст (пусто — без текста)",p_textcolor:"Цвет текста",p_adjust:"Настроить",p_size:"Размер",p_rotate:"Поворот",p_order:"Заказать",p_incl:"с печатью",p_psize:"Размер",p_add:"В корзину",p_note:"Тестовая фаза – оформление скоро. Дизайн сохранён в корзине.",added:"Добавлено в корзину",g_shirt:"Футболка",g_hoodie:"Худи",g_tote:"Сумка",g_cap:"Кепка"},
+      es:{eyebrow:"Estudio de diseño",title:"Diseña tu prenda.",sub:"Elige una prenda, sube tu arte o añade texto y patrones. Arrastra el diseño a su sitio. Vista previa en tiempo real.",hint:"✋ Arrastra el diseño · controles para tamaño y giro",p_garment:"Prenda",p_color:"Color de la prenda",p_motif:"Tu arte",p_upload:"Subir imagen",p_upload_x:"PNG/JPG · tu foto o logo",p_or:"…o elige un patrón",p_clear:"Quitar arte",p_text:"Texto",p_text_ph:"Tu texto (vacío = sin texto)",p_textcolor:"Color del texto",p_adjust:"Ajustar",p_size:"Tamaño",p_rotate:"Giro",p_order:"Pedir",p_incl:"impresión incl.",p_psize:"Talla",p_add:"Añadir al carrito",p_note:"Fase de prueba – pago disponible pronto. Tu diseño se guarda en el carrito.",added:"Añadido al carrito",g_shirt:"Camiseta",g_hoodie:"Sudadera",g_tote:"Bolsa",g_cap:"Gorra"}
+    };
+    let lang = localStorage.getItem("psf_lang") || "de"; if(!T[lang]) lang="de";
+    const theme = localStorage.getItem("psf_theme") || "creme";
+    if(theme!=="creme") document.documentElement.setAttribute("data-theme",theme);
+    const $=(s)=>document.querySelector(s), $$=(s)=>Array.from(document.querySelectorAll(s));
+    const tr=(k)=>T[lang][k]||T.de[k]||k;
+
+    // Garments (SVG silhouette generator)
+    const GARMENTS = {
+      shirt:{price:35,sizes:["XS","S","M","L","XL","XXL"]},
+      hoodie:{price:59,sizes:["S","M","L","XL","XXL"]},
+      tote:{price:19,sizes:["Uni"]},
+      cap:{price:24,sizes:["Uni"]}
+    };
+    const GCOLORS=["#f4f2ee","#1c1c1c","#e8ddcb","#9bb08c","#8fbce0","#ff86b3","#c39a6b","#2f5fd0"];
+    const TCOLORS=["#1c1c1c","#f4f2ee","#ff4d6d","#4d9bff","#caa24a","#4dd0a0","#a24dff"];
+
+    let state={garment:"shirt",gcolor:"#f4f2ee",tcolor:"#1c1c1c",size:GARMENTS.shirt.sizes[2],
+      scale:100,rotate:0,posX:0,posY:0,motif:null,text:""};
+
+    // deep link ?p=des14 -> hoodie
+    const dp=new URLSearchParams(location.search).get("p");
+    if(dp==="des14") state.garment="hoodie";
+
+    function garmentSVG(type,color){
+      const dark=luminance(color)<.5, stroke=dark?"rgba(255,255,255,.18)":"rgba(0,0,0,.14)";
+      const shade="rgba(0,0,0,.08)";
+      if(type==="hoodie") return `<path d="M120 70 q80 -46 160 0 l52 34 -30 66 -30 -14 v230 h-144 v-230 l-30 14 -30 -66z" fill="${color}" stroke="${stroke}" stroke-width="3"/><path d="M150 62 q50 40 100 0 v22 q-50 34 -100 0z" fill="${shade}"/><rect x="150" y="150" width="4" height="120" fill="${shade}"/><rect x="246" y="150" width="4" height="120" fill="${shade}"/>`;
+      if(type==="tote") return `<rect x="128" y="150" width="144" height="200" rx="8" fill="${color}" stroke="${stroke}" stroke-width="3"/><path d="M160 150 q40 -80 80 0" fill="none" stroke="${stroke}" stroke-width="8"/>`;
+      if(type==="cap") return `<path d="M110 250 q90 -150 210 -20 q10 30 -10 40 h-190 q-20 -8 -10 -20z" fill="${color}" stroke="${stroke}" stroke-width="3"/><path d="M120 270 q160 40 210 -14 l30 30 q-140 40 -250 6z" fill="${shade}"/>`;
+      // shirt (default)
+      return `<path d="M120 72 l40 -22 q40 30 80 0 l40 22 44 30 -30 64 -30 -14 v222 h-152 v-222 l-30 14 -30 -64z" fill="${color}" stroke="${stroke}" stroke-width="3"/><path d="M160 50 q40 34 80 0 q6 20 -40 30 q-46 -10 -40 -30z" fill="${shade}"/>`;
+    }
+    function luminance(hex){const c=hex.replace("#","");const r=parseInt(c.substr(0,2),16)/255,g=parseInt(c.substr(2,2),16)/255,b=parseInt(c.substr(4,2),16)/255;return .299*r+.587*g+.114*b;}
+
+    // preset patterns (SVG data-URIs)
+    const PRESETS=[
+      `<rect width='80' height='80' fill='#fff'/><g fill='none' stroke='#ff4d6d' stroke-width='6'><circle cx='40' cy='40' r='22'/><circle cx='40' cy='40' r='34'/></g>`,
+      `<rect width='80' height='80' fill='#111'/><g fill='#ffd84d'><path d='M40 8 L48 30 L72 30 L52 44 L60 68 L40 54 L20 68 L28 44 L8 30 L32 30 Z'/></g>`,
+      `<rect width='80' height='80' fill='#4d9bff'/><g stroke='#fff' stroke-width='5'><path d='M0 20 H80 M0 40 H80 M0 60 H80'/></g>`,
+      `<rect width='80' height='80' fill='#fff'/><text x='40' y='52' font-size='40' text-anchor='middle' font-family='serif' fill='#a24dff'>&#10047;</text>`,
+      `<rect width='80' height='80' fill='#4dd0a0'/><g fill='#0d0b1a'><circle cx='20' cy='20' r='7'/><circle cx='60' cy='20' r='7'/><circle cx='40' cy='40' r='7'/><circle cx='20' cy='60' r='7'/><circle cx='60' cy='60' r='7'/></g>`,
+      `<rect width='80' height='80' fill='#1c1c1c'/><path d='M10 60 Q40 10 70 60' fill='none' stroke='#ff86b3' stroke-width='6'/><path d='M10 70 Q40 20 70 70' fill='none' stroke='#ffd84d' stroke-width='6'/>`,
+      `<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#ff4d6d'/><stop offset='.5' stop-color='#ffd84d'/><stop offset='1' stop-color='#4d9bff'/></linearGradient></defs><rect width='80' height='80' fill='url(%23g)'/>`,
+      `<rect width='80' height='80' fill='#fff'/><g fill='#111' font-family='sans-serif' font-weight='800'><text x='40' y='50' font-size='30' text-anchor='middle'>PSF</text></g>`
+    ];
+    const svgURI=(inner)=>`url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'>${inner}</svg>")`;
+
+    /* ---- i18n ---- */
+    function applyI18n(){
+      $$("[data-i18n]").forEach(el=>{const v=tr(el.dataset.i18n);if(v)el.textContent=v;});
+      $$("[data-i18n-ph]").forEach(el=>el.placeholder=tr(el.dataset.i18nPh));
+      $$(".lang-btn").forEach(b=>b.classList.toggle("is-active",b.dataset.lang===lang));
+      renderGarmentOpts(); renderSizeOpts();
+    }
+
+    /* ---- render ---- */
+    function renderGarment(){ $("#garment").innerHTML=garmentSVG(state.garment,state.gcolor); }
+    function renderGarmentOpts(){
+      $("#garment-opts").innerHTML=Object.keys(GARMENTS).map(g=>
+        `<button class="gopt${g===state.garment?" sel":""}" data-g="${g}">${tr("g_"+g)}</button>`).join("");
+    }
+    function renderSizeOpts(){
+      $("#size-opts").innerHTML=GARMENTS[state.garment].sizes.map(s=>
+        `<button class="gopt${s===state.size?" sel":""}" data-s="${s}">${s}</button>`).join("");
+    }
+    function renderSwatches(){
+      $("#garment-colors").innerHTML=GCOLORS.map(c=>`<span class="sw${c===state.gcolor?" sel":""}" data-gc="${c}" style="background:${c}"></span>`).join("");
+      $("#text-colors").innerHTML=TCOLORS.map(c=>`<span class="sw${c===state.tcolor?" sel":""}" data-tc="${c}" style="background:${c}"></span>`).join("");
+    }
+    function renderDesign(){
+      const d=$("#design"), img=$("#dimg"), txt=$("#dtext");
+      // motif
+      if(state.motif){ if(state.motif.type==="img"){img.src=state.motif.src;img.style.display="block";img.style.background="";}
+        else {img.removeAttribute("src");img.style.display="block";img.style.width="150px";img.style.height="150px";img.style.background=state.motif.css;img.style.borderRadius="10px";} }
+      else { img.style.display="none"; img.removeAttribute("src"); img.style.background=""; }
+      // text
+      if(state.text.trim()){ txt.style.display="block"; txt.textContent=state.text; txt.style.color=state.tcolor;
+        txt.style.fontSize=(state.motif?"22px":"34px"); }
+      else txt.style.display="none";
+      d.style.transform=`translate(calc(-50% + ${state.posX}px), calc(-50% + ${state.posY}px)) rotate(${state.rotate}deg) scale(${state.scale/100})`;
+    }
+    function renderPrice(){
+      const p=GARMENTS[state.garment].price;
+      $("#price").textContent=new Intl.NumberFormat(lang==="en"?"en-DE":lang,{style:"currency",currency:"EUR"}).format(p);
+    }
+
+    function toast(m){const b=$(".toasts");const e=document.createElement("div");e.className="toast";e.innerHTML='<span class="ok">✓</span>'+m;b.appendChild(e);setTimeout(()=>{e.style.opacity="0";setTimeout(()=>e.remove(),300);},2000);}
+
+    /* ---- drag ---- */
+    (function drag(){
+      const d=$("#design"); let on=false,sx,sy,ox,oy;
+      const start=(x,y)=>{on=true;sx=x;sy=y;ox=state.posX;oy=state.posY;d.classList.add("dragging");};
+      const move=(x,y)=>{if(!on)return;state.posX=ox+(x-sx);state.posY=oy+(y-sy);renderDesign();};
+      const end=()=>{on=false;d.classList.remove("dragging");};
+      d.addEventListener("pointerdown",e=>{start(e.clientX,e.clientY);d.setPointerCapture(e.pointerId);});
+      d.addEventListener("pointermove",e=>move(e.clientX,e.clientY));
+      d.addEventListener("pointerup",end); d.addEventListener("pointercancel",end);
+    })();
+
+    /* ---- events ---- */
+    document.addEventListener("click",e=>{
+      const g=e.target.closest("[data-g]"); if(g){state.garment=g.dataset.g;state.size=GARMENTS[g.dataset.g].sizes[Math.min(2,GARMENTS[g.dataset.g].sizes.length-1)];renderGarment();renderGarmentOpts();renderSizeOpts();renderPrice();return;}
+      const s=e.target.closest("[data-s]"); if(s){state.size=s.dataset.s;renderSizeOpts();return;}
+      const gc=e.target.closest("[data-gc]"); if(gc){state.gcolor=gc.dataset.gc;renderGarment();renderSwatches();return;}
+      const tc=e.target.closest("[data-tc]"); if(tc){state.tcolor=tc.dataset.tc;renderSwatches();renderDesign();return;}
+      const pr=e.target.closest("[data-preset]"); if(pr){state.motif={type:"pattern",css:PRESETS_CSS[+pr.dataset.preset]};renderDesign();return;}
+      const lb=e.target.closest(".lang-btn"); if(lb){lang=lb.dataset.lang;localStorage.setItem("psf_lang",lang);applyI18n();renderSwatches();renderPrice();renderDesign();return;}
+      if(e.target.closest("#clear-motif")){state.motif=null;renderDesign();return;}
+    });
+    let PRESETS_CSS=[];
+    $("#file").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{state.motif={type:"img",src:r.result};renderDesign();};r.readAsDataURL(f);});
+    $("#text-in").addEventListener("input",e=>{state.text=e.target.value;renderDesign();});
+    $("#scale").addEventListener("input",e=>{state.scale=+e.target.value;$("#scale-v").textContent=state.scale+"%";renderDesign();});
+    $("#rotate").addEventListener("input",e=>{state.rotate=+e.target.value;$("#rotate-v").textContent=state.rotate+"°";renderDesign();});
+    $("#add").addEventListener("click",()=>{
+      const cart=JSON.parse(localStorage.getItem("psf_cart")||"[]");
+      const p=GARMENTS[state.garment].price;
+      const key="custom|"+state.garment+"|"+state.gcolor+"|"+state.size+"|"+Date.now();
+      cart.push({key,id:state.garment==="hoodie"?"des14":"des13",custom:true,garment:state.garment,
+        color:state.gcolor,size:state.size,qty:1,price:p,
+        text:state.text,hasMotif:!!state.motif});
+      localStorage.setItem("psf_cart",JSON.stringify(cart));
+      toast(tr("added"));
+    });
+
+    /* ---- presets render ---- */
+    function renderPresets(){
+      $("#presets").innerHTML=PRESETS.map((inner,i)=>{const css=svgURI(inner);PRESETS_CSS[i]=css;
+        return `<div class="preset" data-preset="${i}" style="background-image:${css}"></div>`;}).join("");
+    }
+
+    /* ---- init ---- */
+    renderGarment();renderSwatches();renderPresets();renderPrice();applyI18n();renderDesign();
+  })();
+  </script>
+</body>
+</html>
