@@ -206,6 +206,8 @@ tbody tr.low td:first-child{box-shadow:inset 3px 0 0 var(--danger)}
 .pill.out{background:rgba(255,91,91,.16);color:#ffb0b0}
 .pill.low{background:rgba(255,91,91,.2);color:#ffbdbd}
 .pill.demo{background:rgba(255,216,77,.18);color:#ffe59a}
+.pill.ok-pill{background:rgba(77,208,160,.16);color:#8fe6c6}
+.pill.draft-pill{background:rgba(180,180,180,.16);color:#cfcfcf}
 .tbl-actions{display:flex;gap:6px}
 .icon-btn{
   background:var(--bg2);border:1px solid var(--line);color:var(--txt-dim);border-radius:8px;
@@ -304,6 +306,7 @@ footer.app{text-align:center;color:var(--txt-faint);font-size:12px;padding:24px 
   <button data-tab="out"><span class="ic">📤</span><span data-i="tabOut">Warenausgang</span></button>
   <button data-tab="articles"><span class="ic">👗</span><span data-i="tabArticles">Artikel</span></button>
   <button data-tab="journal"><span class="ic">📜</span><span data-i="tabJournal">Journal</span></button>
+  <button data-tab="shop"><span class="ic">🛍️</span><span data-i="tabShop">Shop</span></button>
   <button data-tab="data"><span class="ic">💾</span><span data-i="tabData">Daten</span></button>
 </nav>
 
@@ -432,6 +435,7 @@ footer.app{text-align:center;color:var(--txt-faint);font-size:12px;padding:24px 
           <option value="" data-i="allCats">Alle Kategorien</option>
           <option value="Damen">Damen</option>
           <option value="Herren">Herren</option>
+          <option value="Bademode">Bademode</option>
           <option value="Accessoires">Accessoires</option>
           <option value="Eigen-Design">Eigen-Design</option>
         </select>
@@ -456,6 +460,24 @@ footer.app{text-align:center;color:var(--txt-faint);font-size:12px;padding:24px 
         </select>
       </div>
       <div id="journal-table"></div>
+    </div>
+  </section>
+
+  <!-- ============ SHOP ============ -->
+  <section class="panel" id="panel-shop">
+    <div class="card">
+      <h2 data-i="shopTitle">Shop veröffentlichen</h2>
+      <div class="sub" data-i="shopSub">Nur freigegebene Artikel erscheinen im Online-Shop. Entwürfe bleiben intern.</div>
+      <div class="tiles" style="margin-bottom:14px">
+        <div class="tile money"><div class="k" data-i="mReleased">Freigegeben</div><div class="v mono" id="stat-released">0</div><div class="u" data-i="uInShop">im Shop</div></div>
+        <div class="tile"><div class="k" data-i="mDrafts">Entwürfe</div><div class="v mono" id="stat-drafts">0</div><div class="u" data-i="uInternal">intern</div></div>
+      </div>
+      <div class="row-actions">
+        <button class="btn primary" onclick="publishShop()">🛍️ <span data-i="publishBtn">Auf diesem Gerät veröffentlichen</span></button>
+        <button class="btn blue" onclick="downloadProducts()">⬇️ <span data-i="dlProducts">products.json (für alle Besucher)</span></button>
+      </div>
+      <div class="hint" data-i="shopFoot" style="margin-top:10px">„Veröffentlichen" macht die freigegebenen Artikel sofort im Shop auf DIESEM Gerät sichtbar (Shop öffnen + Hard-Reload). Für ALLE Besucher: „products.json" herunterladen und ins Repo legen lassen.</div>
+      <div id="shop-list" style="margin-top:16px"></div>
     </div>
   </section>
 
@@ -501,10 +523,18 @@ footer.app{text-align:center;color:var(--txt-faint);font-size:12px;padding:24px 
     <div class="grid">
       <label class="fld"><span class="lb" data-i="fCat">Kategorie</span>
         <select id="af-cat">
-          <option>Damen</option><option>Herren</option><option>Accessoires</option><option>Eigen-Design</option>
+          <option>Damen</option><option>Herren</option><option>Bademode</option><option>Accessoires</option><option>Eigen-Design</option>
         </select></label>
       <label class="fld"><span class="lb" data-i="fSize">Größe</span><input id="af-size" placeholder="S / M / L / 38…" autocomplete="off"></label>
       <label class="fld"><span class="lb" data-i="fColor">Farbe</span><input id="af-color" autocomplete="off"></label>
+    </div>
+    <div class="grid">
+      <label class="fld"><span class="lb" data-i="fStatus">Shop-Status</span>
+        <select id="af-status">
+          <option value="entwurf" data-i="stEntwurf">Entwurf (nicht im Shop)</option>
+          <option value="freigegeben" data-i="stFrei">Freigegeben (im Shop)</option>
+        </select></label>
+      <label class="fld" style="grid-column:span 2"><span class="lb" data-i="fImage">Bild-URL (optional)</span><input id="af-image" placeholder="assets/products/… oder https://…" autocomplete="off"></label>
     </div>
     <div class="grid">
       <label class="fld"><span class="lb" data-i="fEk">EK (€)</span><input id="af-ek" type="number" step="0.01" min="0" inputmode="decimal"></label>
@@ -591,7 +621,17 @@ const I18N = {
     scanning:"Scanne… Barcode ins Feld halten.", scanned:"Erfasst:", scanStopped:"Scanner gestoppt.",
     delArticle:"Artikel löschen?", delMsg:"„%s\" wird dauerhaft entfernt. Bewegungen bleiben im Journal.",
     resetConfirm:"Wirklich alles zurücksetzen?", resetConfirmMsg:"Alle Artikel und Bewegungen werden gelöscht und die Demo-Daten neu angelegt.",
-    demo:"DEMO", units:"Stk", low:"niedrig"
+    demo:"DEMO", units:"Stk", low:"niedrig",
+    // Shop / Freigabe (Phase A)
+    tabShop:"Shop", fStatus:"Shop-Status", stEntwurf:"Entwurf (nicht im Shop)", stFrei:"Freigegeben (im Shop)",
+    fImage:"Bild-URL (optional)", stFreiShort:"im Shop", stEntwurfShort:"Entwurf",
+    release:"Freigeben", withdraw:"Zurückziehen", nowReleased:"Für den Shop freigegeben.", nowDraft:"Aus dem Shop zurückgezogen.",
+    shopTitle:"Shop veröffentlichen", shopSub:"Nur freigegebene Artikel erscheinen im Online-Shop. Entwürfe bleiben intern.",
+    mReleased:"Freigegeben", uInShop:"im Shop", mDrafts:"Entwürfe", uInternal:"intern",
+    publishBtn:"Auf diesem Gerät veröffentlichen", dlProducts:"products.json (für alle Besucher)",
+    shopFoot:"„Veröffentlichen\" macht die freigegebenen Artikel sofort im Shop auf DIESEM Gerät sichtbar (Shop öffnen + Hard-Reload). Für ALLE Besucher: „products.json\" herunterladen und ins Repo legen lassen.",
+    shopEmpty:"Noch nichts freigegeben. Gib unter „Artikel\" Teile frei (🛍️).",
+    published:"Veröffentlicht:", publishErr:"Veröffentlichen fehlgeschlagen."
   },
   en:{
     brandTitle:"PSF · Inventory", probe:"Trial phase", toShop:"← to shop",
@@ -641,7 +681,17 @@ const I18N = {
     scanning:"Scanning… hold the barcode in view.", scanned:"Captured:", scanStopped:"Scanner stopped.",
     delArticle:"Delete item?", delMsg:"“%s” will be removed permanently. Movements stay in the journal.",
     resetConfirm:"Really reset everything?", resetConfirmMsg:"All items and movements will be deleted and the demo data recreated.",
-    demo:"DEMO", units:"pcs", low:"low"
+    demo:"DEMO", units:"pcs", low:"low",
+    // Shop / release (Phase A)
+    tabShop:"Shop", fStatus:"Shop status", stEntwurf:"Draft (not in shop)", stFrei:"Released (in shop)",
+    fImage:"Image URL (optional)", stFreiShort:"in shop", stEntwurfShort:"draft",
+    release:"Release", withdraw:"Withdraw", nowReleased:"Released to the shop.", nowDraft:"Withdrawn from the shop.",
+    shopTitle:"Publish to shop", shopSub:"Only released items appear in the online shop. Drafts stay internal.",
+    mReleased:"Released", uInShop:"in shop", mDrafts:"Drafts", uInternal:"internal",
+    publishBtn:"Publish on this device", dlProducts:"products.json (for all visitors)",
+    shopFoot:"“Publish” makes released items visible in the shop on THIS device instantly (open shop + hard reload). For ALL visitors: download “products.json” and have it committed to the repo.",
+    shopEmpty:"Nothing released yet. Release items under “Items” (🛍️).",
+    published:"Published:", publishErr:"Publishing failed."
   }
 };
 let LANG = localStorage.getItem('psf_wws_lang') || 'de';
@@ -726,13 +776,13 @@ function articleBySku(sku){
    Demo data (first run)
    ============================================================ */
 const DEMO_ARTICLES=[
-  {sku:'PSF-1001',name:'Oversize Blazer Milano',cat:'Damen',size:'M',color:'Camel',ek:34.00,vk:129.00,supplier:'Atelier Milano',min:3,stock:7,emoji:'🧥',demo:true},
-  {sku:'PSF-1002',name:'Cargo Wide Pants',cat:'Herren',size:'L',color:'Olive',ek:22.50,vk:89.00,supplier:'Torino Denim',min:4,stock:2,emoji:'👖',demo:true},
-  {sku:'PSF-1003',name:'Rippstrick-Top',cat:'Damen',size:'S',color:'Ecru',ek:9.90,vk:39.90,supplier:'Firenze Knit',min:6,stock:14,emoji:'👚',demo:true},
-  {sku:'PSF-1004',name:'Ledergürtel Toscana',cat:'Accessoires',size:'95',color:'Cognac',ek:7.00,vk:34.90,supplier:'Pelle Toscana',min:5,stock:5,emoji:'🪢',demo:true},
-  {sku:'PSF-1005',name:'Seidenschal Como',cat:'Accessoires',size:'—',color:'Coral',ek:6.50,vk:29.90,supplier:'Seta Como',min:8,stock:3,emoji:'🧣',demo:true},
-  {sku:'PSF-2001',name:'PSF Signature Hoodie',cat:'Eigen-Design',size:'M',color:'Anthrazit',ek:15.00,vk:79.00,supplier:'PSF Eigenproduktion',min:5,stock:11,emoji:'🩳',demo:true},
-  {sku:'PSF-2002',name:'PSF Statement Tee',cat:'Eigen-Design',size:'L',color:'Weiß',ek:6.00,vk:34.90,supplier:'PSF Eigenproduktion',min:10,stock:22,emoji:'👕',demo:true}
+  {sku:'PSF-1001',name:'Oversize Blazer Milano',cat:'Damen',size:'M',color:'Camel',ek:34.00,vk:129.00,supplier:'Atelier Milano',min:3,stock:7,emoji:'🧥',status:'freigegeben',demo:true},
+  {sku:'PSF-1002',name:'Cargo Wide Pants',cat:'Herren',size:'L',color:'Olive',ek:22.50,vk:89.00,supplier:'Torino Denim',min:4,stock:2,emoji:'👖',status:'freigegeben',demo:true},
+  {sku:'PSF-1003',name:'Rippstrick-Top',cat:'Damen',size:'S',color:'Ecru',ek:9.90,vk:39.90,supplier:'Firenze Knit',min:6,stock:14,emoji:'👚',status:'freigegeben',demo:true},
+  {sku:'PSF-1004',name:'Ledergürtel Toscana',cat:'Accessoires',size:'95',color:'Cognac',ek:7.00,vk:34.90,supplier:'Pelle Toscana',min:5,stock:5,emoji:'🪢',status:'freigegeben',demo:true},
+  {sku:'PSF-1005',name:'Seidenschal Como',cat:'Accessoires',size:'—',color:'Coral',ek:6.50,vk:29.90,supplier:'Seta Como',min:8,stock:3,emoji:'🧣',status:'freigegeben',demo:true},
+  {sku:'PSF-2001',name:'PSF Signature Hoodie',cat:'Eigen-Design',size:'M',color:'Anthrazit',ek:15.00,vk:79.00,supplier:'PSF Eigenproduktion',min:5,stock:11,emoji:'🩳',status:'freigegeben',demo:true},
+  {sku:'PSF-2002',name:'PSF Statement Tee',cat:'Eigen-Design',size:'L',color:'Weiß',ek:6.00,vk:34.90,supplier:'PSF Eigenproduktion',min:10,stock:22,emoji:'👕',status:'freigegeben',demo:true}
 ];
 async function seedIfEmpty(){
   const seeded = await idbGet('meta','seeded');
@@ -783,7 +833,67 @@ document.getElementById('tabs').addEventListener('click',e=>{
 /* ============================================================
    Rendering
    ============================================================ */
-function renderAll(){ renderDashboard(); renderArticles(); renderJournal(); }
+function renderAll(){ renderDashboard(); renderArticles(); renderJournal(); renderShop(); }
+
+/* ============================================================
+   Shop-Veröffentlichung (Lager → Shop-Brücke, Phase A)
+   ============================================================ */
+const WH2SHOP_CAT={ 'Damen':'women','Herren':'men','Bademode':'swim','Accessoires':'acc','Eigen-Design':'design' };
+const COLOR2HEX={ schwarz:'#1c1c1c',anthrazit:'#2b2b2b',weiss:'#f4f2ee','weiß':'#f4f2ee',ecru:'#e8ddcb',creme:'#e8ddcb',
+  camel:'#c39a6b',cognac:'#a4632f',beige:'#d8c3a0',sand:'#d8c3a0',braun:'#6d4b32',
+  rot:'#d6353b',bordeaux:'#6d2233',koralle:'#ff6f61',coral:'#ff6f61',pink:'#ff5c9d',rosa:'#ff86b3',
+  orange:'#ff9e43',gelb:'#ffd84d',gold:'#caa24a',gruen:'#4c9a5c','grün':'#4c9a5c',oliv:'#6f7350',olive:'#6f7350',salbei:'#9bb08c',
+  blau:'#2f5fd0',kobalt:'#2f5fd0',himmel:'#8fbce0',denim:'#3f5c78',petrol:'#245b63',
+  lila:'#7d4bbf',lavendel:'#b7a6e0',violett:'#7d4bbf',grau:'#9a9a9a',silber:'#c8c8c8' };
+function colorToHex(c){ if(!c) return '#c9c2b8'; const s=String(c).trim(); if(/^#([0-9a-f]{3,8})$/i.test(s)) return s;
+  return COLOR2HEX[s.toLowerCase()] || '#c9c2b8'; }
+function articleToShopProduct(a){
+  const id=String(a.sku||('a'+a.id)).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+  const sizes=a.size?String(a.size).split(/[\/,]/).map(s=>s.trim()).filter(s=>s && s!=='—'):[];
+  return { id, cat:WH2SHOP_CAT[a.cat]||'women', price:Number(a.vk)||0, name:a.name,
+    sizes:sizes.length?sizes:['Uni'], colors:a.color?[colorToHex(a.color)]:[], badge:'new',
+    img:a.image||undefined };
+}
+function releasedProducts(){ return ARTICLES.filter(a=>(a.status||'entwurf')==='freigegeben').map(articleToShopProduct); }
+
+function renderShop(){
+  const rel=ARTICLES.filter(a=>(a.status||'entwurf')==='freigegeben');
+  const dr=ARTICLES.filter(a=>(a.status||'entwurf')!=='freigegeben');
+  const relEl=document.getElementById('stat-released'), drEl=document.getElementById('stat-drafts');
+  if(relEl) relEl.textContent=num(rel.length); if(drEl) drEl.textContent=num(dr.length);
+  const el=document.getElementById('shop-list'); if(!el) return;
+  if(rel.length===0){ el.innerHTML=`<div class="empty"><div class="big">🛍️</div>${esc(t('shopEmpty'))}</div>`; return; }
+  el.innerHTML=`<div class="table-wrap"><table>
+    <thead><tr><th></th><th>${t('colSku')}</th><th>${t('colName')}</th><th>${t('colCat')}</th><th class="right">${t('colVk')}</th><th></th></tr></thead>
+    <tbody>${rel.map(a=>`<tr>
+      <td class="emoji-cell">${esc(a.emoji||'📦')}</td>
+      <td class="mono">${esc(a.sku)}</td>
+      <td>${esc(a.name)}</td>
+      <td><span class="pill cat">${esc((WH2SHOP_CAT[a.cat]||a.cat))}</span></td>
+      <td class="right mono">${eur(a.vk)}</td>
+      <td><button class="icon-btn" title="${t('withdraw')}" onclick="toggleArticleStatus(${a.id})">↩️</button></td></tr>`).join('')}</tbody></table></div>`;
+}
+
+async function toggleArticleStatus(id){
+  const a=ARTICLES.find(x=>x.id===id); if(!a) return;
+  a.status=(a.status||'entwurf')==='freigegeben'?'entwurf':'freigegeben';
+  await idbPut('articles',a); await refreshCaches(); renderAll();
+  toast(a.status==='freigegeben'?t('nowReleased'):t('nowDraft'),'ok');
+}
+
+function publishShop(){
+  const prods=releasedProducts();
+  try{ localStorage.setItem('psf_products',JSON.stringify({app:'PSF-Shop',version:1,products:prods})); }
+  catch(e){ toast(t('publishErr'),'err'); return; }
+  toast(`${t('published')} ${prods.length} ${t('tArts')}`,'ok');
+}
+
+function downloadProducts(){
+  const prods=releasedProducts();
+  const json=JSON.stringify({app:'PSF-Shop',version:1,generated:new Date().toISOString(),products:prods},null,2);
+  download('products.json',json,'application/json');
+  toast(`products.json · ${prods.length} ${t('tArts')}`,'ok');
+}
 
 function renderDashboard(){
   const nArt=ARTICLES.length;
@@ -862,7 +972,7 @@ function renderArticles(){
       return `<tr class="${lowFlag?'low':''}">
         <td class="emoji-cell">${esc(a.emoji||'📦')}</td>
         <td class="mono">${esc(a.sku)}${a.demo?` <span class="pill demo">${t('demo')}</span>`:''}</td>
-        <td>${esc(a.name)}</td>
+        <td>${esc(a.name)}${(a.status||'entwurf')==='freigegeben'?` <span class="pill ok-pill">${t('stFreiShort')}</span>`:` <span class="pill draft-pill">${t('stEntwurfShort')}</span>`}</td>
         <td><span class="pill cat">${esc(a.cat||'—')}</span></td>
         <td>${esc(a.size||'—')}</td>
         <td>${esc(a.color||'—')}</td>
@@ -872,6 +982,7 @@ function renderArticles(){
         <td class="right mono">${a.min}</td>
         <td>${esc(a.supplier||'—')}</td>
         <td><div class="tbl-actions">
+          <button class="icon-btn" title="${(a.status||'entwurf')==='freigegeben'?t('withdraw'):t('release')}" onclick="toggleArticleStatus(${a.id})">${(a.status||'entwurf')==='freigegeben'?'↩️':'🛍️'}</button>
           <button class="icon-btn" title="Edit" onclick="openArticleDialog(${a.id})">✏️</button>
           <button class="icon-btn del" title="Delete" onclick="askDeleteArticle(${a.id})">🗑️</button>
         </div></td></tr>`;
@@ -963,10 +1074,12 @@ function openArticleDialog(id, prefillSku){
     set('af-size',a.size); set('af-color',a.color);
     set('af-ek',a.ek); set('af-vk',a.vk); set('af-supplier',a.supplier);
     set('af-min',a.min); set('af-stock',a.stock);
+    document.getElementById('af-status').value=a.status||'entwurf'; set('af-image',a.image);
   } else {
     document.getElementById('art-modal-title').textContent=t('newArticle');
-    ['af-sku','af-emoji','af-name','af-size','af-color','af-ek','af-vk','af-supplier'].forEach(k=>set(k,''));
+    ['af-sku','af-emoji','af-name','af-size','af-color','af-ek','af-vk','af-supplier','af-image'].forEach(k=>set(k,''));
     document.getElementById('af-cat').value='Damen';
+    document.getElementById('af-status').value='entwurf';
     set('af-min',3); set('af-stock',0);
     if(prefillSku) set('af-sku',prefillSku);
   }
@@ -995,6 +1108,8 @@ async function saveArticle(){
     supplier:document.getElementById('af-supplier').value.trim(),
     min:parseInt(document.getElementById('af-min').value,10)||0,
     stock:parseInt(document.getElementById('af-stock').value,10)||0,
+    status:document.getElementById('af-status').value||'entwurf',
+    image:document.getElementById('af-image').value.trim(),
     demo:false
   };
   if(id){
