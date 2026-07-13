@@ -72,7 +72,8 @@
   </style>
 </head>
 <body>
-  <div class="rainbow-frame on" aria-hidden="true"></div>
+  <div class="holo-frame" aria-hidden="true"></div>
+  <div class="holo-orb" aria-hidden="true"></div>
   <div class="bg-aurora" aria-hidden="true"><span></span><span></span><span></span></div>
 
   <!-- TOPBAR -->
@@ -89,6 +90,19 @@
       <button class="pill pill--swatch theme-btn" data-theme-pick="neon"><i style="background:#0d0b1a"></i><i style="background:#ff2ec4"></i>Neon</button>
       <button class="pill pill--swatch theme-btn" data-theme-pick="pastel"><i style="background:#fff7fb"></i><i style="background:#ff86b3"></i>Pastell</button>
       <button class="pill pill--swatch theme-btn" data-theme-pick="mono"><i style="background:#fff"></i><i style="background:#111"></i>Mono</button>
+      <button class="pill pill--swatch theme-btn" data-theme-pick="holo"><i style="background:#c9a0ff"></i><i style="background:#2fd3cf"></i>Holo</button>
+      <button class="pill pill--swatch theme-btn" data-theme-pick="sunset"><i style="background:#241521"></i><i style="background:#ff6f61"></i>Sunset</button>
+      <button class="pill pill--swatch theme-btn" data-theme-pick="aqua"><i style="background:#eefbfb"></i><i style="background:#12b3b3"></i>Aqua</button>
+    </div>
+  </div>
+  <div class="topbar__inner" style="padding-top:0">
+    <div class="pillrow" role="group" aria-label="Schrift">
+      <span class="topbar__label" data-i="fontLabel">Schrift</span>
+      <button class="pill font-btn is-active" data-font-pick="v1">V1 · Editorial</button>
+      <button class="pill font-btn" data-font-pick="v2">V2 · Grotesk</button>
+      <button class="pill font-btn" data-font-pick="v3">V3 · Serif</button>
+      <button class="pill font-btn" data-font-pick="v4">V4 · Mono</button>
+      <button class="pill font-btn" data-font-pick="v5">V5 · Bold</button>
     </div>
   </div></div>
 
@@ -130,6 +144,12 @@
 
   <!-- VIDEO-MODAL -->
   <div class="vmodal" id="vmodal"><div class="vmodal__card"></div></div>
+  <!-- VOLLBILD-LIGHTBOX -->
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox__close" data-lbclose aria-label="close">&times;</button>
+    <div class="lightbox__media" id="lb-media"></div>
+    <div class="lightbox__bar" id="lb-bar"></div>
+  </div>
   <div class="toasts"></div>
 
   <script>
@@ -139,30 +159,32 @@
     let lang=localStorage.getItem('psf_lang')||'de';
     const theme=localStorage.getItem('psf_theme')||'creme';
     if(theme!=='creme') document.documentElement.setAttribute('data-theme',theme);
+    const font=localStorage.getItem('psf_font')||'v1';
+    if(font!=='v1') document.documentElement.setAttribute('data-font',font);
 
     const T={
-      de:{tag:"Video-Shop",nShop:"Shop",nVideo:"Video-Shop",nDesign:"Eigenes Design",nContact:"Kontakt",
+      de:{tag:"Video-Shop",fontLabel:"Schrift",nShop:"Shop",nVideo:"Video-Shop",nDesign:"Eigenes Design",nContact:"Kontakt",
         eyebrow:"Video-Shop · echte Clips",title:"Sieh es",titleEm:"in Bewegung.",
         sub:"Echte Creator tragen die Teile — Farbe wählen zeigt ein anderes Video. Und genau dieses Teil kaufst du direkt hier.",
         dropTitle:"Zum Ausprobieren:",dropText:"ein Video (MP4) einfach auf eine Karte ziehen — es läuft dann lokal in der Vorschau. (Zum Veröffentlichen kommt es später ins Repo.)",
         live:"LIVE",soon:"Video folgt",dropHere:"🎬 Video hierher ziehen",pickSize:"Größe",pickColor:"Farbe",
         add:"In den Warenkorb",added:"Zum Warenkorb hinzugefügt",chooseSize:"Bitte Größe wählen",
         creator:"Video von",noVideoYet:"Für diese Farbe ist noch kein Video da — zieh eins hierher.",dropped:"Video geladen (nur Vorschau)."},
-      en:{tag:"Video shop",nShop:"Shop",nVideo:"Video shop",nDesign:"Custom Design",nContact:"Contact",
+      en:{tag:"Video shop",fontLabel:"Font",nShop:"Shop",nVideo:"Video shop",nDesign:"Custom Design",nContact:"Contact",
         eyebrow:"Video shop · real clips",title:"See it",titleEm:"in motion.",
         sub:"Real creators wear the pieces — pick a colour to see a different video. And you buy that exact piece right here.",
         dropTitle:"To try it:",dropText:"just drag a video (MP4) onto a card — it plays locally in the preview. (Publishing to the repo comes later.)",
         live:"LIVE",soon:"video soon",dropHere:"🎬 Drop a video here",pickSize:"Size",pickColor:"Colour",
         add:"Add to cart",added:"Added to cart",chooseSize:"Please choose a size",
         creator:"Video by",noVideoYet:"No video for this colour yet — drop one here.",dropped:"Video loaded (preview only)."},
-      ru:{tag:"Видео-шоп",nShop:"Магазин",nVideo:"Видео-шоп",nDesign:"Свой дизайн",nContact:"Контакты",
+      ru:{tag:"Видео-шоп",fontLabel:"Шрифт",nShop:"Магазин",nVideo:"Видео-шоп",nDesign:"Свой дизайн",nContact:"Контакты",
         eyebrow:"Видео-шоп · живые ролики",title:"Смотри",titleEm:"в движении.",
         sub:"Настоящие креаторы носят вещи — выбери цвет, чтобы увидеть другое видео. И купи именно эту вещь прямо здесь.",
         dropTitle:"Чтобы попробовать:",dropText:"просто перетащи видео (MP4) на карточку — оно проиграется локально в предпросмотре. (Публикация в репозиторий — позже.)",
         live:"LIVE",soon:"скоро видео",dropHere:"🎬 Перетащи видео сюда",pickSize:"Размер",pickColor:"Цвет",
         add:"В корзину",added:"Добавлено в корзину",chooseSize:"Выберите размер",
         creator:"Видео:",noVideoYet:"Для этого цвета видео пока нет — перетащи сюда.",dropped:"Видео загружено (предпросмотр)."},
-      es:{tag:"Video-tienda",nShop:"Tienda",nVideo:"Video-tienda",nDesign:"Diseño propio",nContact:"Contacto",
+      es:{tag:"Video-tienda",fontLabel:"Fuente",nShop:"Tienda",nVideo:"Video-tienda",nDesign:"Diseño propio",nContact:"Contacto",
         eyebrow:"Video-tienda · clips reales",title:"Míralo",titleEm:"en movimiento.",
         sub:"Creadores reales llevan las prendas — elige un color para ver otro vídeo. Y compras esa misma prenda aquí.",
         dropTitle:"Para probar:",dropText:"arrastra un vídeo (MP4) sobre una tarjeta — se reproduce localmente en la vista previa. (La publicación al repo viene después.)",
@@ -196,20 +218,25 @@
         name:{de:'Cargo Wide Leg Trieste',en:'Cargo Wide Leg Trieste',ru:'Карго Wide Leg Trieste',es:'Cargo Wide Leg Trieste'},
         colors:[{k:'oliv',video:null},{k:'creme',video:null},{k:'schwarz',video:null}]}
     ];
-    const sel={}, DROP={};            // sel[id]=Farb-Index, DROP[id+'|'+k]=objectURL (lokale Vorschau)
+    const sel={}, DROP={};            // sel[id]=Farb-Index, DROP[id+'|'+k]={type,url} (lokale Vorschau)
     P.forEach(p=>sel[p.id]=0);
-    const vidFor=(p,ci)=>{const c=p.colors[ci];return DROP[p.id+'|'+c.k]||c.video||null;};
+    const slotFor=(p,ci)=>{const c=p.colors[ci];const d=DROP[p.id+'|'+c.k];if(d)return d;if(c.video)return {type:'video',url:c.video};return null;};
 
     /* ---- Toast ---- */
     function toast(m,ok=true){const b=$('.toasts');const e=document.createElement('div');e.className='toast';e.innerHTML=(ok?'<span class="ok">✓</span>':'⚠️')+esc(m);b.appendChild(e);setTimeout(()=>{e.style.opacity='0';setTimeout(()=>e.remove(),300);},2200);}
 
     /* ---- Karte-Medium (Video oder Platzhalter) ---- */
     function mediaHTML(p,ci){
-      const c=p.colors[ci], v=vidFor(p,ci), hex=CH[c.k]||'#888';
+      const c=p.colors[ci], s=slotFor(p,ci), hex=CH[c.k]||'#888';
       const c2=`color-mix(in srgb,${hex} 55%,#000 25%)`;
-      if(v){ return `<video src="${esc(v)}" muted loop playsinline preload="metadata"></video>
-        <div class="vcard__badge">${tr('live')}</div>
-        <div class="vcard__play"><span><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span></div>`; }
+      if(s){
+        const badge=`<div class="vcard__badge">${s.type==='image'?'📷':tr('live')}</div>`;
+        const inner = s.type==='image'
+          ? `<img src="${esc(s.url)}" alt="${esc(p.name[lang])}" style="width:100%;height:100%;object-fit:cover;display:block">`
+          : `<video src="${esc(s.url)}" muted loop playsinline preload="metadata"></video>`;
+        const play = s.type==='video' ? `<div class="vcard__play"><span><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span></div>` : '';
+        return inner + badge + play;
+      }
       return `<div class="vcard__ph" style="--c1:${hex};--c2:${c2}"><div><div class="big">🎬</div>${esc(p.name[lang])}<small>${esc(cn(c.k))} · ${tr('dropHere')}</small></div></div>`;
     }
 
@@ -219,7 +246,7 @@
         const ci=sel[p.id];
         const sw=p.colors.map((c,i)=>`<span class="${i===ci?'sel':''}" data-sw="${p.id}:${i}" title="${esc(cn(c.k))}" style="background:${CH[c.k]||'#888'}"></span>`).join('');
         return `<article class="vcard" data-id="${p.id}">
-          <div class="vcard__media" data-open="${p.id}">${mediaHTML(p,ci)}</div>
+          <div class="vcard__media" data-lb="${p.id}">${mediaHTML(p,ci)}</div>
           <div class="vcard__body">
             <h3 class="vcard__name">${esc(p.name[lang])}</h3>
             <div class="vsw" data-swwrap="${p.id}">${sw}</div>
@@ -240,9 +267,10 @@
     }
     function handleDrop(id,files){
       const p=P.find(x=>x.id===id); const f=files&&files[0];
-      if(!f||!/^video\//.test(f.type)){ toast(tr('noVideoYet'),false); return; }
+      if(!f||!/^(video|image)\//.test(f.type)){ toast(tr('noVideoYet'),false); return; }
+      const type=/^video\//.test(f.type)?'video':'image';
       const url=URL.createObjectURL(f);
-      const ci=sel[id]; DROP[id+'|'+p.colors[ci].k]=url;
+      const ci=sel[id]; DROP[id+'|'+p.colors[ci].k]={type,url};
       render(); toast(tr('dropped'));
       // frisch gerendertes Video anspielen
       const nv=document.querySelector(`.vcard[data-id="${id}"] video`); if(nv) nv.play().catch(()=>{});
@@ -282,18 +310,38 @@
       toast(tr('added'));
     }
 
+    /* ---- Vollbild-Lightbox ---- */
+    let lst={id:null};
+    function openLightbox(id){ lst={id}; $('#lightbox').classList.add('on'); document.body.style.overflow='hidden'; renderLightbox(); }
+    function closeLightbox(){ $('#lightbox').classList.remove('on'); document.body.style.overflow=''; $('#lb-media').innerHTML=''; }
+    function renderLightbox(){
+      const p=P.find(x=>x.id===lst.id); if(!p) return; const ci=sel[p.id]; const s=slotFor(p,ci);
+      const media = s ? (s.type==='image'
+          ? `<img src="${esc(s.url)}" alt="${esc(p.name[lang])}">`
+          : `<video src="${esc(s.url)}" autoplay muted loop playsinline controls></video>`)
+        : `<div class="vcard__ph" style="--c1:${CH[p.colors[ci].k]||'#888'};--c2:#111;width:min(88vw,400px);aspect-ratio:9/16;position:relative;border-radius:16px"><div><div class="big">🎬</div>${esc(p.name[lang])}<small>${tr('dropHere')}</small></div></div>`;
+      $('#lb-media').innerHTML=media;
+      const sw=p.colors.map((c,i)=>`<span class="${i===ci?'sel':''}" data-lsw="${p.id}:${i}" title="${esc(cn(c.k))}" style="background:${CH[c.k]||'#888'}"></span>`).join('');
+      $('#lb-bar').innerHTML=`<b>${esc(p.name[lang])}</b><b>${money(p.price)}</b><span class="lb-sw">${sw}</span><button class="btn3d btn-sm" data-lbbuy>${tr('add')}</button>`;
+      const v=$('#lb-media video'); if(v) v.play().catch(()=>{});
+    }
+
     /* ---- Events ---- */
     document.addEventListener('click',e=>{
       const sw=e.target.closest('[data-sw]'); if(sw){ const [id,i]=sw.dataset.sw.split(':'); sel[id]=+i; render(); return; }
+      const lsw=e.target.closest('[data-lsw]'); if(lsw){ const [id,i]=lsw.dataset.lsw.split(':'); sel[id]=+i; renderLightbox(); return; }
       const msw=e.target.closest('[data-msw]'); if(msw){ const [id,i]=msw.dataset.msw.split(':'); sel[id]=+i; renderModal(); return; }
-      const op=e.target.closest('[data-open]'); if(op){ openModal(op.dataset.open); return; }
+      if(e.target.closest('[data-lbbuy]')){ const id=lst.id; closeLightbox(); openModal(id); return; }
+      if(e.target.closest('[data-lbclose]')||e.target.id==='lightbox'){ closeLightbox(); return; }
+      const lb=e.target.closest('[data-lb]'); if(lb){ openLightbox(lb.dataset.lb); return; }
       const ms=e.target.closest('[data-msize]'); if(ms){ mst.size=ms.dataset.msize; renderModal(); return; }
       if(e.target.closest('[data-madd]')){ if(!mst.size){ toast(tr('chooseSize'),false); return; } addToCart(mst.id,sel[mst.id],mst.size); closeModal(); return; }
       if(e.target.closest('[data-close]')||e.target.id==='vmodal'){ closeModal(); return; }
     });
-    document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
+    document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeModal(); closeLightbox(); } });
     $$('.lang-btn').forEach(b=>b.addEventListener('click',()=>{ lang=b.dataset.lang; localStorage.setItem('psf_lang',lang); applyI18n(); render(); if($('#vmodal').classList.contains('on')) renderModal(); $$('.lang-btn').forEach(x=>x.classList.toggle('is-active',x.dataset.lang===lang)); }));
     $$('.theme-btn').forEach(b=>b.addEventListener('click',()=>{ const n=b.dataset.themePick; if(n==='creme')document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme',n); localStorage.setItem('psf_theme',n); $$('.theme-btn').forEach(x=>x.classList.toggle('is-active',x.dataset.themePick===n)); }));
+    $$('.font-btn').forEach(b=>b.addEventListener('click',()=>{ const f=b.dataset.fontPick; if(f==='v1')document.documentElement.removeAttribute('data-font'); else document.documentElement.setAttribute('data-font',f); localStorage.setItem('psf_font',f); $$('.font-btn').forEach(x=>x.classList.toggle('is-active',x.dataset.fontPick===f)); }));
     // Fenster-weites Drag&Drop verhindert versehentliches Browser-Öffnen der Datei
     ['dragover','drop'].forEach(ev=>window.addEventListener(ev,e=>{ if(e.target.closest('.vcard__media')) return; e.preventDefault(); }));
 
@@ -301,6 +349,8 @@
 
     /* ---- Warenkorb-Zähler initial ---- */
     (function(){ const cart=JSON.parse(localStorage.getItem('psf_cart')||'[]'); const cc=cart.reduce((n,i)=>n+i.qty,0); const b=$('.cart-count'); b.textContent=cc; if(cc>0) b.classList.add('show'); })();
+    $$('.theme-btn').forEach(x=>x.classList.toggle('is-active',x.dataset.themePick===theme));
+    $$('.font-btn').forEach(x=>x.classList.toggle('is-active',x.dataset.fontPick===font));
 
     applyI18n(); render();
   })();
