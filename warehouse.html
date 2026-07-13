@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#14100f">
+<link rel="icon" type="image/png" sizes="48x48" href="assets/logo-48.png">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/logo-32.png">
+<link rel="apple-touch-icon" href="assets/logo-180.png">
 <title>PSF · Warenwirtschaft</title>
 <style>
 /* ============================================================
@@ -82,9 +85,8 @@ header.app{
 }
 .brand{display:flex;align-items:center;gap:12px;min-width:0}
 .brand .mark{
-  width:42px;height:42px;border-radius:12px;flex:none;
-  display:grid;place-items:center;font-family:'Abril Fatface',serif;font-size:20px;color:#fff;
-  background:var(--rainbow);box-shadow:var(--shadow-sm);
+  width:42px;height:42px;border-radius:12px;flex:none;object-fit:cover;
+  background:#f2ece4;box-shadow:var(--shadow-sm);
 }
 .brand .txt{min-width:0}
 .brand .txt .t1{font-family:'Abril Fatface',serif;font-size:19px;line-height:1;white-space:nowrap}
@@ -279,7 +281,7 @@ footer.app{text-align:center;color:var(--txt-faint);font-size:12px;padding:24px 
 
 <header class="app">
   <div class="brand">
-    <div class="mark">PSF</div>
+    <img class="mark" src="assets/logo-96.png" alt="Perfect Skin Fashion" width="42" height="42">
     <div class="txt">
       <div class="t1" data-i="brandTitle">PSF · Warenwirtschaft</div>
       <div class="t2">Perfect Skin Fashion · Hamburg</div>
