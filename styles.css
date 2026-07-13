@@ -177,7 +177,9 @@ section{position:relative;z-index:1}
   background:var(--grad);color:var(--accent-ink);font-family:var(--font-head);font-size:17px;
   box-shadow:var(--shadow-sm)}
 .logo__img{width:46px;height:46px;border-radius:12px;flex:none;object-fit:cover;
-  background:#f2ece4;box-shadow:var(--shadow-sm)}
+  background:#f2ece4;box-shadow:var(--shadow-sm);cursor:pointer;transform-origin:left center;
+  transition:transform .28s cubic-bezier(.2,.8,.2,1),box-shadow .28s}
+.logo__img:hover{transform:scale(1.9);z-index:40;position:relative;box-shadow:0 16px 40px -12px rgba(0,0,0,.5)}
 .intro__logo{width:clamp(96px,20vw,150px);height:auto;border-radius:22px;margin:0 auto 18px;
   box-shadow:0 20px 50px -20px rgba(0,0,0,.4);display:block}
 .logo__title{font-family:var(--font-head);font-size:20px;color:var(--ink);line-height:1}
