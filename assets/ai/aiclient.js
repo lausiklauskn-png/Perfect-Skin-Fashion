@@ -29,19 +29,20 @@ window.PSFAi = (function () {
   function isReady() { return !!(mem && mem.key); }
   function provider() { return (mem && mem.provider) || (meta() && meta().provider) || "claude"; }
 
-  async function save({ provider, key, model, pin }) {
-    const m = { mode: pin ? "pin" : "plain", provider, model: model || "" };
+  async function save({ provider, key, model, imageKey, pin }) {
+    const payload = { provider, key, model: model || "", imageKey: imageKey || "" };
+    const m = { mode: pin ? "pin" : "plain", provider, model: model || "", hasImage: !!imageKey };
     if (pin) {
       const salt = crypto.getRandomValues(new Uint8Array(16));
       const iv = crypto.getRandomValues(new Uint8Array(12));
       const ck = await deriveKey(pin, salt);
-      const ct = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, ck, te.encode(JSON.stringify({ provider, key, model })));
+      const ct = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, ck, te.encode(JSON.stringify(payload)));
       localStorage.setItem(LS_BLOB, JSON.stringify({ v: 1, salt: b64(salt), iv: b64(iv), ct: b64(ct) }));
     } else {
-      localStorage.setItem(LS_BLOB, JSON.stringify({ v: 1, plain: { provider, key, model } }));
+      localStorage.setItem(LS_BLOB, JSON.stringify({ v: 1, plain: payload }));
     }
     localStorage.setItem(LS_META, JSON.stringify(m));
-    mem = { provider, key, model };
+    mem = payload;
     return true;
   }
 
@@ -133,5 +134,69 @@ window.PSFAi = (function () {
     return parse(txt);
   }
 
-  return { PROVIDERS, CATS, save, unlock, lock, clear, isConfigured, needsPin, isReady, loadIfPlain, meta, provider, buildPrompt, parse, suggestArticle };
+  /* ---------------- Bild-Erzeugung (Phase E) ----------------
+     OpenAI gpt-image-1 (Bilder = kein PII → unkritisch). Eigener Schlüssel.
+     Zwei Wege: reiner Text→Bild (generations) ODER Referenzfoto veredeln (edits). */
+  function hasImageKey() { if (!mem) loadIfPlain(); return !!(mem && mem.imageKey); }
+
+  const STYLE_PRESETS = {
+    streetwear: {
+      label: "Grafik-Streetwear (Hamburg)",
+      text: "editorial streetwear lookbook photo, young model wearing the garment, oversized modern fit, bold graphic energy, casual confident pose, urban Hamburg backdrop (brick warehouses, harbour, modern architecture), natural daylight, shot on a phone, authentic candid vibe, high quality, realistic",
+    },
+    elegant: {
+      label: "Elegant-modern (Milano)",
+      text: "clean elegant fashion editorial photo, young model wearing the garment, refined modern Italian styling, soft studio-daylight, minimal premium backdrop, tasteful confident pose, high quality, realistic",
+    },
+  };
+  const IMG_NEGATIVE = "no visible brand logos, no text watermark, no distorted hands, realistic proportions";
+
+  function buildImagePrompt(article, styleKey) {
+    const st = STYLE_PRESETS[styleKey] || STYLE_PRESETS.streetwear;
+    const parts = [];
+    if (article) {
+      if (article.name) parts.push(article.name);
+      if (article.color) parts.push("colour " + article.color);
+      if (article.cat) parts.push("category " + article.cat);
+    }
+    const subject = parts.length ? parts.join(", ") : "a modern fashion garment";
+    return `Product fashion photo of ${subject}. ${st.text}. Portrait orientation. ${IMG_NEGATIVE}.`;
+  }
+
+  // dataURL "data:image/png;base64,..." -> Blob (für multipart edits)
+  function dataUrlToBlob(dataUrl) {
+    const [head, b64d] = dataUrl.split(","); const mime = (head.match(/data:(.*?);/) || [])[1] || "image/png";
+    const bin = atob(b64d); const u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    return new Blob([u8], { type: mime });
+  }
+
+  async function generateProductImage({ article, styleKey, refDataUrl, size }) {
+    if (!hasImageKey()) throw new Error("noImageKey");
+    const key = mem.imageKey;
+    const prompt = buildImagePrompt(article, styleKey);
+    const dim = size || "1024x1536"; // Hochformat, passt zu 2:3 Produktkarten
+    let r;
+    if (refDataUrl) {
+      const fd = new FormData();
+      fd.append("model", "gpt-image-1");
+      fd.append("prompt", prompt);
+      fd.append("size", dim);
+      fd.append("image", dataUrlToBlob(refDataUrl), "ref.png");
+      r = await fetch("https://api.openai.com/v1/images/edits", { method: "POST", headers: { Authorization: "Bearer " + key }, body: fd });
+    } else {
+      r = await fetch("https://api.openai.com/v1/images/generations", {
+        method: "POST",
+        headers: { Authorization: "Bearer " + key, "content-type": "application/json" },
+        body: JSON.stringify({ model: "gpt-image-1", prompt, size: dim, n: 1 }),
+      });
+    }
+    if (!r.ok) { let msg = "HTTP " + r.status; try { const e = await r.json(); if (e.error && e.error.message) msg += " – " + e.error.message; } catch (x) {} throw new Error(msg); }
+    const d = await r.json();
+    const b64d = d.data && d.data[0] && d.data[0].b64_json;
+    if (!b64d) throw new Error("noImage");
+    return "data:image/png;base64," + b64d;
+  }
+
+  return { PROVIDERS, CATS, save, unlock, lock, clear, isConfigured, needsPin, isReady, loadIfPlain, meta, provider,
+    buildPrompt, parse, suggestArticle, hasImageKey, STYLE_PRESETS, buildImagePrompt, generateProductImage };
 })();

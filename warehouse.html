@@ -541,6 +541,21 @@ footer.app{text-align:center;color:var(--txt-faint);font-size:12px;padding:24px 
         </select></label>
       <label class="fld" style="grid-column:span 2"><span class="lb" data-i="fImage">Bild-URL (optional)</span><input id="af-image" placeholder="assets/products/… oder https://…" autocomplete="off"></label>
     </div>
+    <div class="fld" style="border:1px solid var(--line);border-radius:12px;padding:12px">
+      <div class="lb" style="display:flex;align-items:center;gap:8px;margin-bottom:8px">📸 <span data-i="imgSection">KI-Produktbild</span></div>
+      <div class="row-actions" style="align-items:center;flex-wrap:wrap">
+        <select id="af-imgstyle" style="max-width:220px">
+          <option value="streetwear" data-i="imgStyleStreet">Grafik-Streetwear (Hamburg)</option>
+          <option value="elegant" data-i="imgStyleElegant">Elegant-modern (Milano)</option>
+        </select>
+        <label class="btn ghost sm" style="cursor:pointer">📎 <span data-i="imgRef">Referenzfoto</span><input id="af-imgref" type="file" accept="image/*" style="display:none" onchange="document.getElementById('af-imgrefname').textContent=this.files[0]?('📎 '+this.files[0].name):''"></label>
+        <button type="button" class="btn blue sm" id="af-imgbtn" onclick="aiGenerateImage()">✨ <span data-i="imgGen">Bild erzeugen</span></button>
+      </div>
+      <div id="af-imgrefname" class="hint"></div>
+      <div id="af-imgstatus" class="hint" style="margin-top:6px"></div>
+      <img id="af-imgprev" alt="" style="display:none;max-width:160px;border-radius:10px;margin-top:8px">
+      <div class="hint" data-i="imgNote" style="margin-top:6px">Bilder = kein PII. Das erzeugte Bild wird das Artikelbild und erscheint nach Freigabe im Shop.</div>
+    </div>
     <div class="grid">
       <label class="fld"><span class="lb" data-i="fEk">EK (€)</span><input id="af-ek" type="number" step="0.01" min="0" inputmode="decimal"></label>
       <label class="fld"><span class="lb" data-i="fVk">VK (€)</span><input id="af-vk" type="number" step="0.01" min="0" inputmode="decimal"></label>
@@ -579,8 +594,10 @@ footer.app{text-align:center;color:var(--txt-faint);font-size:12px;padding:24px 
         <option value="claude">Claude (Anthropic)</option>
         <option value="mistral" data-i="aiMistral">Mistral (EU · DSGVO)</option>
       </select></label>
-    <label class="fld"><span class="lb" data-i="aiKey">API-Schlüssel</span>
+    <label class="fld"><span class="lb" data-i="aiKey">API-Schlüssel (Text)</span>
       <input id="ai-key" type="password" autocomplete="off" placeholder="sk-…"></label>
+    <label class="fld"><span class="lb" data-i="aiImgKey">Bild-KI-Schlüssel (OpenAI, optional)</span>
+      <input id="ai-imgkey" type="password" autocomplete="off" placeholder="sk-… (für KI-Produktbilder)"></label>
     <label class="fld"><span class="lb" data-i="aiPin">PIN (optional, zum Verschlüsseln)</span>
       <input id="ai-pin" type="password" inputmode="numeric" autocomplete="off" placeholder="z.B. 4-stellig"></label>
     <div class="hint" data-i="aiPinHint">Mit PIN wird der Schlüssel verschlüsselt gespeichert (empfohlen). Ohne PIN wird er unverschlüsselt im Browser abgelegt — nur auf deinem eigenen Gerät nutzen.</div>
@@ -676,7 +693,14 @@ const I18N = {
     aiNeedPin:"Bitte PIN eingeben.", aiUnlocked:"Entsperrt.", aiWrongPin:"Falscher PIN.",
     aiCleared:"KI-Schlüssel entfernt.", aiNoneShort:"Kein KI-Schlüssel — bitte hinterlegen.",
     aiLockedShort:"KI gesperrt — bitte entsperren.", aiNeedHint:"Bitte erst Stichworte im Namensfeld tippen.",
-    aiThinking:"KI denkt nach…", aiDone:"KI-Vorschlag übernommen.", aiError:"KI-Fehler"
+    aiThinking:"KI denkt nach…", aiDone:"KI-Vorschlag übernommen.", aiError:"KI-Fehler",
+    // KI-Produktbild (Phase E)
+    aiImgKey:"Bild-KI-Schlüssel (OpenAI, optional)", imgSection:"KI-Produktbild",
+    imgStyleStreet:"Grafik-Streetwear (Hamburg)", imgStyleElegant:"Elegant-modern (Milano)",
+    imgRef:"Referenzfoto", imgGen:"Bild erzeugen",
+    imgNote:"Bilder = kein PII. Das erzeugte Bild wird das Artikelbild und erscheint nach Freigabe im Shop. Optional: Foto des echten Teils als Referenz.",
+    imgThinking:"KI erzeugt das Bild… (dauert etwas)", imgDone:"Bild erzeugt.", imgErr:"Bild-Fehler",
+    imgNoKey:"Kein Bild-KI-Schlüssel — bitte in den KI-Einstellungen (OpenAI) hinterlegen."
   },
   en:{
     brandTitle:"PSF · Inventory", probe:"Trial phase", toShop:"← to shop",
@@ -750,7 +774,14 @@ const I18N = {
     aiNeedPin:"Please enter the PIN.", aiUnlocked:"Unlocked.", aiWrongPin:"Wrong PIN.",
     aiCleared:"AI key removed.", aiNoneShort:"No AI key — please add one.",
     aiLockedShort:"AI locked — please unlock.", aiNeedHint:"Please type keywords in the name field first.",
-    aiThinking:"AI is thinking…", aiDone:"AI suggestion applied.", aiError:"AI error"
+    aiThinking:"AI is thinking…", aiDone:"AI suggestion applied.", aiError:"AI error",
+    // AI product image (Phase E)
+    aiImgKey:"Image-AI key (OpenAI, optional)", imgSection:"AI product image",
+    imgStyleStreet:"Graphic streetwear (Hamburg)", imgStyleElegant:"Elegant-modern (Milano)",
+    imgRef:"Reference photo", imgGen:"Generate image",
+    imgNote:"Images are not personal data. The generated image becomes the article image and appears in the shop once released. Optional: a photo of the real piece as reference.",
+    imgThinking:"AI is generating the image… (takes a moment)", imgDone:"Image generated.", imgErr:"Image error",
+    imgNoKey:"No image-AI key — please add one in the AI settings (OpenAI)."
   }
 };
 let LANG = localStorage.getItem('psf_wws_lang') || 'de';
@@ -978,6 +1009,7 @@ function openAiSettings(){
   const m=PSFAi.meta();
   document.getElementById('ai-provider').value=(m&&m.provider)||'claude';
   document.getElementById('ai-key').value='';
+  document.getElementById('ai-imgkey').value='';
   document.getElementById('ai-pin').value='';
   refreshAiStatus();
   closeModal('confirm-back');
@@ -986,9 +1018,10 @@ function openAiSettings(){
 async function saveAiSettings(){
   const provider=document.getElementById('ai-provider').value;
   const key=document.getElementById('ai-key').value.trim();
+  const imageKey=document.getElementById('ai-imgkey').value.trim();
   const pin=document.getElementById('ai-pin').value.trim();
   if(!key){ toast(t('aiNeedKey'),'warn'); return; }
-  await PSFAi.save({provider,key,pin:pin||undefined});
+  await PSFAi.save({provider,key,imageKey:imageKey||undefined,pin:pin||undefined});
   refreshAiStatus(); toast(t('aiSaved'),'ok'); closeModal('ai-modal-back');
 }
 async function unlockAiSettings(){
@@ -1019,6 +1052,45 @@ async function aiSuggestArticle(){
     st.textContent='';
     if(String(e.message)==='locked'){ toast(t('aiLockedShort'),'warn'); openAiSettings(); }
     else toast(t('aiError')+' ('+e.message+')','err');
+  }finally{ btn.disabled=false; }
+}
+
+// Erzeugtes KI-Bild verkleinern (Canvas → JPEG), damit es in den Speicher passt + Shop schnell lädt
+function shrinkImage(dataUrl, maxW, quality){
+  return new Promise((res)=>{ const im=new Image();
+    im.onload=()=>{ const s=Math.min(1, maxW/im.width); const w=Math.round(im.width*s), h=Math.round(im.height*s);
+      const c=document.createElement('canvas'); c.width=w; c.height=h;
+      try{ c.getContext('2d').drawImage(im,0,0,w,h); res(c.toDataURL('image/jpeg',quality||0.85)); }
+      catch(e){ res(dataUrl); } };
+    im.onerror=()=>res(dataUrl); im.src=dataUrl; });
+}
+
+async function aiGenerateImage(){
+  if(!window.PSFAi){ toast(t('aiNoneShort'),'warn'); return; }
+  if(PSFAi.isConfigured() && PSFAi.needsPin() && !PSFAi.isReady()){ toast(t('aiLockedShort'),'warn'); openAiSettings(); return; }
+  if(!PSFAi.hasImageKey()){ toast(t('imgNoKey'),'warn'); openAiSettings(); return; }
+  const article={ name:document.getElementById('af-name').value.trim(), cat:document.getElementById('af-cat').value, color:document.getElementById('af-color').value.trim() };
+  if(!article.name){ toast(t('aiNeedHint'),'warn'); document.getElementById('af-name').focus(); return; }
+  const styleKey=document.getElementById('af-imgstyle').value;
+  const refInput=document.getElementById('af-imgref');
+  const btn=document.getElementById('af-imgbtn'), st=document.getElementById('af-imgstatus');
+  btn.disabled=true; st.textContent='… '+t('imgThinking');
+  try{
+    let refDataUrl=null;
+    if(refInput.files && refInput.files[0]){
+      refDataUrl=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(refInput.files[0]);});
+    }
+    const raw=await PSFAi.generateProductImage({article,styleKey,refDataUrl});
+    const dataUrl=await shrinkImage(raw, 900, 0.85);
+    document.getElementById('af-image').value=dataUrl;
+    const prev=document.getElementById('af-imgprev'); prev.src=dataUrl; prev.style.display='block';
+    st.textContent='✨ '+t('imgDone');
+    toast(t('imgDone'),'ok');
+  }catch(e){
+    st.textContent='';
+    const m=String(e.message);
+    if(m==='noImageKey'){ toast(t('imgNoKey'),'warn'); openAiSettings(); }
+    else toast(t('imgErr')+' ('+m+')','err');
   }finally{ btn.disabled=false; }
 }
 
@@ -1212,6 +1284,12 @@ function openArticleDialog(id, prefillSku){
   }
   // ensure other modals closed
   const aiSt=document.getElementById('af-ai-status'); if(aiSt) aiSt.textContent='';
+  // KI-Produktbild: Status/Referenz zurücksetzen, Vorschau aus Bild-Feld
+  const imgSt=document.getElementById('af-imgstatus'); if(imgSt) imgSt.textContent='';
+  const refN=document.getElementById('af-imgrefname'); if(refN) refN.textContent='';
+  const refI=document.getElementById('af-imgref'); if(refI) refI.value='';
+  const prev=document.getElementById('af-imgprev');
+  if(prev){ const v=document.getElementById('af-image').value; if(v){ prev.src=v; prev.style.display='block'; } else { prev.removeAttribute('src'); prev.style.display='none'; } }
   closeModal('confirm-back');
   back.classList.add('on');
   setTimeout(()=>document.getElementById(id?'af-name':'af-sku').focus(),50);
