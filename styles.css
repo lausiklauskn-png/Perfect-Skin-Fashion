@@ -373,6 +373,21 @@ section{position:relative;z-index:1}
 .footer a:hover{color:var(--accent)}
 .footer__bottom{border-top:1px solid var(--line);padding:16px var(--pad-x);text-align:center;font-size:13px;
   max-width:var(--maxw);margin-inline:auto}
+/* Footer-Extra: Beauty-Link + Warenwirtschaft-Button */
+.footer__extra{max-width:var(--maxw);margin-inline:auto;padding:14px var(--pad-x);display:flex;gap:16px;
+  align-items:center;justify-content:space-between;flex-wrap:wrap;border-top:1px solid var(--line)}
+.beauty-link{display:inline-flex;align-items:center;gap:12px;text-decoration:none;color:var(--ink);
+  padding:8px 12px 8px 8px;border-radius:100px;transition:background .2s}
+.beauty-link:hover{background:var(--card)}
+.beauty-link img{width:52px;height:52px;border-radius:14px;object-fit:cover;background:#f2ece4;
+  box-shadow:var(--shadow-sm);transition:transform .28s cubic-bezier(.2,.8,.2,1)}
+.beauty-link:hover img{transform:scale(1.18)}
+.beauty-link b{display:block;font-family:var(--font-head);font-size:16px;color:var(--ink);line-height:1.1}
+.beauty-link small{color:var(--accent);font-weight:700;font-size:12.5px}
+.footer__extra .wws-note{font-weight:700;font-size:10.5px;background:rgba(255,255,255,.28);
+  padding:2px 8px;border-radius:100px;letter-spacing:.04em}
+@media(max-width:560px){.footer__extra{flex-direction:column;align-items:stretch}
+  .footer__extra .btn3d{justify-content:center}}
 
 /* ===================== CART DRAWER ===================== */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:150;opacity:0;visibility:hidden;
