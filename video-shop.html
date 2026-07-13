@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="creme">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video-Shop — Perfect Skin Fashion</title>
+  <meta name="description" content="Perfect Skin Fashion Video-Shop — echte Creator-Videos statt Produktbilder. Farbe wählen = anderes Video. Genau dieses Teil direkt kaufen.">
+  <meta name="theme-color" content="#ff4d6d">
+  <link rel="icon" type="image/png" sizes="48x48" href="assets/icon-48.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/icon-32.png">
+  <link rel="apple-touch-icon" href="assets/icon-180.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ===== Video-Shop-spezifisch ===== */
+    .vhero{padding:22px 0 6px}
+    .vhero h1{font-size:clamp(30px,5vw,52px)}
+    .vhero .vhero__em{background:var(--rainbow);background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 5s linear infinite}
+    .drophint{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--card);border:1px dashed var(--line);
+      border-radius:var(--radius);padding:12px 16px;margin:16px 0;font-size:14px}
+    .drophint b{color:var(--ink)}
+    .vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:22px;margin-top:8px}
+    .vcard{position:relative;border-radius:var(--radius-lg);overflow:hidden;background:var(--card);
+      border:1px solid var(--line);box-shadow:var(--shadow-sm);transition:transform .3s,box-shadow .3s,border-color .2s;display:flex;flex-direction:column}
+    .vcard:hover{transform:translateY(-6px);box-shadow:var(--shadow);border-color:transparent}
+    .vcard.drop-hot{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 35%,transparent)}
+    .vcard__media{position:relative;aspect-ratio:9/16;background:#111;overflow:hidden;cursor:pointer}
+    .vcard__media video{width:100%;height:100%;object-fit:cover;display:block;background:#111}
+    .vcard__ph{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:#fff;padding:14px;
+      background:linear-gradient(160deg,var(--c1,#ff4d6d),var(--c2,#a24dff))}
+    .vcard__ph .big{font-size:34px;margin-bottom:8px}
+    .vcard__ph small{display:block;opacity:.9;font-size:12px;margin-top:6px}
+    .vcard__badge{position:absolute;top:10px;left:10px;z-index:2;background:var(--accent);color:var(--accent-ink);
+      font-size:10.5px;font-weight:700;padding:4px 10px;border-radius:100px;letter-spacing:.05em;display:inline-flex;gap:5px;align-items:center}
+    .vcard__badge::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;animation:blink 1.4s infinite}
+    .vcard__play{position:absolute;inset:0;display:grid;place-items:center;z-index:2;pointer-events:none;transition:opacity .2s}
+    .vcard:hover .vcard__play{opacity:0}
+    .vcard__play span{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.9);display:grid;place-items:center}
+    .vcard__play svg{width:20px;height:20px;fill:var(--accent);margin-left:3px}
+    .vcard__body{padding:12px 14px 16px;display:flex;flex-direction:column;gap:7px}
+    .vcard__name{font-family:var(--font-head);font-size:18px;color:var(--ink);line-height:1.15}
+    .vcard__row{display:flex;justify-content:space-between;align-items:center;margin-top:2px}
+    .vcard__price{font-weight:700;color:var(--ink);font-size:16px}
+    .vsw{display:flex;gap:6px;flex-wrap:wrap}
+    .vsw span{width:20px;height:20px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);cursor:pointer;transition:transform .15s}
+    .vsw span:hover{transform:scale(1.18)}
+    .vsw span.sel{box-shadow:0 0 0 2px var(--card),0 0 0 3.5px var(--ink)}
+    /* Video-Modal */
+    .vmodal{position:fixed;inset:0;z-index:170;display:grid;place-items:center;padding:18px;opacity:0;visibility:hidden;transition:.3s;background:rgba(0,0,0,.55);backdrop-filter:blur(3px)}
+    .vmodal.on{opacity:1;visibility:visible}
+    .vmodal__card{background:var(--page);border-radius:var(--radius-lg);max-width:900px;width:100%;max-height:92vh;overflow:auto;display:grid;grid-template-columns:auto 1fr;gap:0;box-shadow:var(--shadow);transform:scale(.95);transition:transform .3s}
+    .vmodal.on .vmodal__card{transform:scale(1)}
+    .vmodal__media{background:#111;position:relative;width:min(46vw,360px)}
+    .vmodal__media video{width:100%;height:100%;object-fit:cover;display:block;min-height:60vh;max-height:88vh}
+    .vmodal__media .vcard__ph{position:absolute;inset:0}
+    .vmodal__body{padding:24px;min-width:0}
+    .vmodal__close{position:absolute;top:12px;right:12px;z-index:4;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.92);color:#111;font-size:22px;border:0;cursor:pointer}
+    .vmodal__name{font-family:var(--font-head);font-size:28px;color:var(--ink);margin:4px 0 8px}
+    .vmodal__price{font-size:22px;font-weight:700;color:var(--ink);margin-bottom:14px}
+    .vopt{margin:14px 0}
+    .vopt b{display:block;color:var(--ink);font-size:13px;margin-bottom:8px}
+    .vsizes{display:flex;gap:8px;flex-wrap:wrap}
+    .vsize{min-width:42px;padding:9px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);font-weight:700;color:var(--ink);cursor:pointer}
+    .vsize.sel{background:var(--ink);color:var(--page);border-color:var(--ink)}
+    .vsw--lg span{width:26px;height:26px}
+    .creatorline{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:13px;color:var(--body)}
+    .creatorline a{color:var(--accent);text-decoration:none;font-weight:700}
+    @media(max-width:640px){
+      .vmodal__card{grid-template-columns:1fr}
+      .vmodal__media{width:100%} .vmodal__media video{min-height:40vh;max-height:52vh}
+    }
+  </style>
+</head>
+<body>
+  <div class="rainbow-frame on" aria-hidden="true"></div>
+  <div class="bg-aurora" aria-hidden="true"><span></span><span></span><span></span></div>
+
+  <!-- TOPBAR -->
+  <div class="topbar"><div class="topbar__inner">
+    <div class="pillrow" role="group" aria-label="Sprache">
+      <button class="pill lang-btn is-active" data-lang="de">DE</button>
+      <button class="pill lang-btn" data-lang="en">EN</button>
+      <button class="pill lang-btn" data-lang="ru">RU</button>
+      <button class="pill lang-btn" data-lang="es">ES</button>
+    </div>
+    <div class="pillrow" role="group" aria-label="Design">
+      <button class="pill pill--swatch theme-btn is-active" data-theme-pick="creme"><i style="background:#fbf9f6"></i><i style="background:#ff4d6d"></i>Crème</button>
+      <button class="pill pill--swatch theme-btn" data-theme-pick="mokka"><i style="background:#141010"></i><i style="background:#ffb347"></i>Mokka</button>
+      <button class="pill pill--swatch theme-btn" data-theme-pick="neon"><i style="background:#0d0b1a"></i><i style="background:#ff2ec4"></i>Neon</button>
+      <button class="pill pill--swatch theme-btn" data-theme-pick="pastel"><i style="background:#fff7fb"></i><i style="background:#ff86b3"></i>Pastell</button>
+      <button class="pill pill--swatch theme-btn" data-theme-pick="mono"><i style="background:#fff"></i><i style="background:#111"></i>Mono</button>
+    </div>
+  </div></div>
+
+  <!-- HEADER -->
+  <header class="header" id="top">
+    <div class="header__inner">
+      <a class="logo" href="index.html" aria-label="Perfect Skin Fashion">
+        <img class="logo__img" src="assets/icon-96.png" alt="Perfect Skin Fashion" width="46" height="46">
+        <span><span class="logo__title">Perfect Skin Fashion</span><br><span class="logo__sub" data-i="tag">Video-Shop</span></span>
+      </a>
+      <nav class="nav">
+        <a class="nav__link" href="index.html" data-i="nShop">Shop</a>
+        <a class="nav__link" href="video-shop.html" style="color:var(--accent)" data-i="nVideo">Video-Shop</a>
+        <a class="nav__link" href="design-studio.html" data-i="nDesign">Eigenes Design</a>
+        <a class="nav__link" href="index.html#contact" data-i="nContact">Kontakt</a>
+      </nav>
+      <div class="nav__actions">
+        <button class="cart-btn" aria-label="Warenkorb" onclick="location.href='index.html'">
+          <svg viewBox="0 0 24 24"><path d="M7 4h-2l-1 2v0M6 6h15l-1.5 9h-12L6 6Zm2 13a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Zm9 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+          <span class="cart-count">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="vhero">
+      <p class="eyebrow" data-i="eyebrow">Video-Shop · echte Clips</p>
+      <h1 data-i="title">Sieh es <span class="vhero__em" data-i="titleEm">in Bewegung.</span></h1>
+      <p class="muted" style="max-width:60ch;margin-top:8px" data-i="sub">Echte Creator tragen die Teile — Farbe wählen zeigt ein anderes Video. Und genau dieses Teil kaufst du direkt hier.</p>
+    </section>
+
+    <div class="drophint">
+      🎬 <b data-i="dropTitle">Zum Ausprobieren:</b> <span data-i="dropText">ein Video (MP4) einfach auf eine Karte ziehen — es läuft dann lokal in der Vorschau. (Zum Veröffentlichen kommt es später ins Repo.)</span>
+    </div>
+
+    <div class="vgrid" id="vgrid"></div>
+  </main>
+
+  <!-- VIDEO-MODAL -->
+  <div class="vmodal" id="vmodal"><div class="vmodal__card"></div></div>
+  <div class="toasts"></div>
+
+  <script>
+  (function(){
+    "use strict";
+    /* ---- Sprache / Theme ---- */
+    let lang=localStorage.getItem('psf_lang')||'de';
+    const theme=localStorage.getItem('psf_theme')||'creme';
+    if(theme!=='creme') document.documentElement.setAttribute('data-theme',theme);
+
+    const T={
+      de:{tag:"Video-Shop",nShop:"Shop",nVideo:"Video-Shop",nDesign:"Eigenes Design",nContact:"Kontakt",
+        eyebrow:"Video-Shop · echte Clips",title:"Sieh es",titleEm:"in Bewegung.",
+        sub:"Echte Creator tragen die Teile — Farbe wählen zeigt ein anderes Video. Und genau dieses Teil kaufst du direkt hier.",
+        dropTitle:"Zum Ausprobieren:",dropText:"ein Video (MP4) einfach auf eine Karte ziehen — es läuft dann lokal in der Vorschau. (Zum Veröffentlichen kommt es später ins Repo.)",
+        live:"LIVE",soon:"Video folgt",dropHere:"🎬 Video hierher ziehen",pickSize:"Größe",pickColor:"Farbe",
+        add:"In den Warenkorb",added:"Zum Warenkorb hinzugefügt",chooseSize:"Bitte Größe wählen",
+        creator:"Video von",noVideoYet:"Für diese Farbe ist noch kein Video da — zieh eins hierher.",dropped:"Video geladen (nur Vorschau)."},
+      en:{tag:"Video shop",nShop:"Shop",nVideo:"Video shop",nDesign:"Custom Design",nContact:"Contact",
+        eyebrow:"Video shop · real clips",title:"See it",titleEm:"in motion.",
+        sub:"Real creators wear the pieces — pick a colour to see a different video. And you buy that exact piece right here.",
+        dropTitle:"To try it:",dropText:"just drag a video (MP4) onto a card — it plays locally in the preview. (Publishing to the repo comes later.)",
+        live:"LIVE",soon:"video soon",dropHere:"🎬 Drop a video here",pickSize:"Size",pickColor:"Colour",
+        add:"Add to cart",added:"Added to cart",chooseSize:"Please choose a size",
+        creator:"Video by",noVideoYet:"No video for this colour yet — drop one here.",dropped:"Video loaded (preview only)."},
+      ru:{tag:"Видео-шоп",nShop:"Магазин",nVideo:"Видео-шоп",nDesign:"Свой дизайн",nContact:"Контакты",
+        eyebrow:"Видео-шоп · живые ролики",title:"Смотри",titleEm:"в движении.",
+        sub:"Настоящие креаторы носят вещи — выбери цвет, чтобы увидеть другое видео. И купи именно эту вещь прямо здесь.",
+        dropTitle:"Чтобы попробовать:",dropText:"просто перетащи видео (MP4) на карточку — оно проиграется локально в предпросмотре. (Публикация в репозиторий — позже.)",
+        live:"LIVE",soon:"скоро видео",dropHere:"🎬 Перетащи видео сюда",pickSize:"Размер",pickColor:"Цвет",
+        add:"В корзину",added:"Добавлено в корзину",chooseSize:"Выберите размер",
+        creator:"Видео:",noVideoYet:"Для этого цвета видео пока нет — перетащи сюда.",dropped:"Видео загружено (предпросмотр)."},
+      es:{tag:"Video-tienda",nShop:"Tienda",nVideo:"Video-tienda",nDesign:"Diseño propio",nContact:"Contacto",
+        eyebrow:"Video-tienda · clips reales",title:"Míralo",titleEm:"en movimiento.",
+        sub:"Creadores reales llevan las prendas — elige un color para ver otro vídeo. Y compras esa misma prenda aquí.",
+        dropTitle:"Para probar:",dropText:"arrastra un vídeo (MP4) sobre una tarjeta — se reproduce localmente en la vista previa. (La publicación al repo viene después.)",
+        live:"LIVE",soon:"vídeo pronto",dropHere:"🎬 Arrastra un vídeo aquí",pickSize:"Talla",pickColor:"Color",
+        add:"Añadir al carrito",added:"Añadido al carrito",chooseSize:"Elige una talla",
+        creator:"Vídeo de",noVideoYet:"Aún no hay vídeo para este color — arrastra uno aquí.",dropped:"Vídeo cargado (solo vista previa)."}
+    };
+    if(!T[lang]) lang='de';
+    const tr=k=>(T[lang]&&T[lang][k])||T.de[k]||k;
+    const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
+    const money=n=>new Intl.NumberFormat(lang==='en'?'en-DE':lang,{style:'currency',currency:'EUR'}).format(n);
+    const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+    /* ---- Farben ---- */
+    const CH={schwarz:'#1c1c1c',weiss:'#f4f2ee',creme:'#e8ddcb',camel:'#c39a6b',koralle:'#ff6f61',kobalt:'#2f5fd0',oliv:'#6f7350',salbei:'#9bb08c',gold:'#caa24a',pink:'#ff5c9d'};
+    const CN={schwarz:{de:'Schwarz',en:'Black',ru:'Чёрный',es:'Negro'},weiss:{de:'Weiß',en:'White',ru:'Белый',es:'Blanco'},creme:{de:'Creme',en:'Cream',ru:'Крем',es:'Crema'},camel:{de:'Camel',en:'Camel',ru:'Кэмел',es:'Camel'},koralle:{de:'Koralle',en:'Coral',ru:'Коралл',es:'Coral'},kobalt:{de:'Kobalt',en:'Cobalt',ru:'Кобальт',es:'Cobalto'},oliv:{de:'Oliv',en:'Olive',ru:'Оливковый',es:'Oliva'},salbei:{de:'Salbei',en:'Sage',ru:'Шалфей',es:'Salvia'},gold:{de:'Gold',en:'Gold',ru:'Золото',es:'Oro'},pink:{de:'Pink',en:'Pink',ru:'Розовый',es:'Rosa'}};
+    const cn=c=>CN[c]?CN[c][lang]:c;
+
+    /* ---- Produkte (Video pro Farbe; video:null = noch keins) ---- */
+    const P=[
+      {id:'blz01',price:129,sizes:['XS','S','M','L','XL'],creator:'@hh.styles',link:'https://www.instagram.com/',
+        name:{de:'Blazer Oversize Milano',en:'Oversize Blazer Milano',ru:'Оверсайз-блейзер Milano',es:'Blazer Oversize Milano'},
+        colors:[{k:'schwarz',video:null},{k:'camel',video:null},{k:'creme',video:null}]},
+      {id:'bik05',price:59,sizes:['XS','S','M','L'],creator:'@riviera.girl',link:'https://www.instagram.com/',
+        name:{de:'Bikini Riviera',en:'Bikini Riviera',ru:'Бикини Riviera',es:'Bikini Riviera'},
+        colors:[{k:'koralle',video:null},{k:'kobalt',video:null},{k:'gold',video:null}]},
+      {id:'des13',price:35,sizes:['S','M','L','XL','XXL'],creator:'@print.boy',link:'https://www.youtube.com/',
+        name:{de:'Print-Shirt · dein Design',en:'Print Tee · your design',ru:'Футболка с принтом',es:'Camiseta print'},
+        colors:[{k:'weiss',video:null},{k:'schwarz',video:null},{k:'salbei',video:null}]},
+      {id:'pnt03',price:79,sizes:['S','M','L','XL'],creator:'@cargo.hh',link:'https://www.instagram.com/',
+        name:{de:'Cargo Wide Leg Trieste',en:'Cargo Wide Leg Trieste',ru:'Карго Wide Leg Trieste',es:'Cargo Wide Leg Trieste'},
+        colors:[{k:'oliv',video:null},{k:'creme',video:null},{k:'schwarz',video:null}]}
+    ];
+    const sel={}, DROP={};            // sel[id]=Farb-Index, DROP[id+'|'+k]=objectURL (lokale Vorschau)
+    P.forEach(p=>sel[p.id]=0);
+    const vidFor=(p,ci)=>{const c=p.colors[ci];return DROP[p.id+'|'+c.k]||c.video||null;};
+
+    /* ---- Toast ---- */
+    function toast(m,ok=true){const b=$('.toasts');const e=document.createElement('div');e.className='toast';e.innerHTML=(ok?'<span class="ok">✓</span>':'⚠️')+esc(m);b.appendChild(e);setTimeout(()=>{e.style.opacity='0';setTimeout(()=>e.remove(),300);},2200);}
+
+    /* ---- Karte-Medium (Video oder Platzhalter) ---- */
+    function mediaHTML(p,ci){
+      const c=p.colors[ci], v=vidFor(p,ci), hex=CH[c.k]||'#888';
+      const c2=`color-mix(in srgb,${hex} 55%,#000 25%)`;
+      if(v){ return `<video src="${esc(v)}" muted loop playsinline preload="metadata"></video>
+        <div class="vcard__badge">${tr('live')}</div>
+        <div class="vcard__play"><span><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span></div>`; }
+      return `<div class="vcard__ph" style="--c1:${hex};--c2:${c2}"><div><div class="big">🎬</div>${esc(p.name[lang])}<small>${esc(cn(c.k))} · ${tr('dropHere')}</small></div></div>`;
+    }
+
+    /* ---- Grid ---- */
+    function render(){
+      $('#vgrid').innerHTML=P.map(p=>{
+        const ci=sel[p.id];
+        const sw=p.colors.map((c,i)=>`<span class="${i===ci?'sel':''}" data-sw="${p.id}:${i}" title="${esc(cn(c.k))}" style="background:${CH[c.k]||'#888'}"></span>`).join('');
+        return `<article class="vcard" data-id="${p.id}">
+          <div class="vcard__media" data-open="${p.id}">${mediaHTML(p,ci)}</div>
+          <div class="vcard__body">
+            <h3 class="vcard__name">${esc(p.name[lang])}</h3>
+            <div class="vsw" data-swwrap="${p.id}">${sw}</div>
+            <div class="vcard__row"><span class="vcard__price">${money(p.price)}</span></div>
+          </div>
+        </article>`;
+      }).join('');
+      // Hover-Play + Drag&Drop pro Karte
+      $$('.vcard').forEach(card=>{
+        const id=card.dataset.id;
+        const media=card.querySelector('.vcard__media');
+        const vid=card.querySelector('video');
+        if(vid){ card.addEventListener('pointerenter',()=>vid.play().catch(()=>{})); card.addEventListener('pointerleave',()=>{vid.pause();}); }
+        ['dragenter','dragover'].forEach(ev=>media.addEventListener(ev,e=>{e.preventDefault();card.classList.add('drop-hot');}));
+        ['dragleave','dragend'].forEach(ev=>media.addEventListener(ev,()=>card.classList.remove('drop-hot')));
+        media.addEventListener('drop',e=>{e.preventDefault();card.classList.remove('drop-hot');handleDrop(id,e.dataTransfer.files);});
+      });
+    }
+    function handleDrop(id,files){
+      const p=P.find(x=>x.id===id); const f=files&&files[0];
+      if(!f||!/^video\//.test(f.type)){ toast(tr('noVideoYet'),false); return; }
+      const url=URL.createObjectURL(f);
+      const ci=sel[id]; DROP[id+'|'+p.colors[ci].k]=url;
+      render(); toast(tr('dropped'));
+      // frisch gerendertes Video anspielen
+      const nv=document.querySelector(`.vcard[data-id="${id}"] video`); if(nv) nv.play().catch(()=>{});
+    }
+
+    /* ---- Modal ---- */
+    let mst={id:null,size:null};
+    function openModal(id){ mst={id,size:null}; $('#vmodal').classList.add('on'); document.body.style.overflow='hidden'; renderModal(); }
+    function closeModal(){ $('#vmodal').classList.remove('on'); document.body.style.overflow=''; }
+    function renderModal(){
+      const p=P.find(x=>x.id===mst.id); if(!p) return; const ci=sel[p.id];
+      const sw=p.colors.map((c,i)=>`<span class="${i===ci?'sel':''}" data-msw="${p.id}:${i}" title="${esc(cn(c.k))}" style="background:${CH[c.k]||'#888'}"></span>`).join('');
+      const sizes=p.sizes.map(s=>`<button class="vsize ${mst.size===s?'sel':''}" data-msize="${s}">${s}</button>`).join('');
+      $('#vmodal .vmodal__card').innerHTML=`
+        <button class="vmodal__close" data-close>&times;</button>
+        <div class="vmodal__media">${mediaHTML(p,ci)}</div>
+        <div class="vmodal__body">
+          <h2 class="vmodal__name">${esc(p.name[lang])}</h2>
+          <div class="vmodal__price">${money(p.price)}</div>
+          <div class="vopt"><b>${tr('pickColor')}: ${esc(cn(p.colors[ci].k))}</b><div class="vsw vsw--lg">${sw}</div></div>
+          <div class="vopt"><b>${tr('pickSize')}</b><div class="vsizes">${sizes}</div></div>
+          <button class="btn3d" data-madd style="width:100%;justify-content:center;margin-top:8px">${tr('add')}</button>
+          <div class="creatorline">🎬 ${tr('creator')} <a href="${esc(p.link)}" target="_blank" rel="noopener">${esc(p.creator)}</a></div>
+        </div>`;
+      const v=$('#vmodal video'); if(v) v.play().catch(()=>{});
+    }
+
+    /* ---- Warenkorb (geteilt mit Haupt-Shop) ---- */
+    function addToCart(id,ci,size){
+      const p=P.find(x=>x.id===id); const c=p.colors[ci];
+      const cart=JSON.parse(localStorage.getItem('psf_cart')||'[]');
+      const key=id+'|'+CH[c.k]+'|'+size;
+      const ex=cart.find(i=>i.key===key);
+      if(ex) ex.qty++; else cart.push({key,id,color:CH[c.k],size,qty:1,price:p.price});
+      localStorage.setItem('psf_cart',JSON.stringify(cart));
+      const cc=cart.reduce((n,i)=>n+i.qty,0); const b=$('.cart-count'); b.textContent=cc; b.classList.add('show');
+      toast(tr('added'));
+    }
+
+    /* ---- Events ---- */
+    document.addEventListener('click',e=>{
+      const sw=e.target.closest('[data-sw]'); if(sw){ const [id,i]=sw.dataset.sw.split(':'); sel[id]=+i; render(); return; }
+      const msw=e.target.closest('[data-msw]'); if(msw){ const [id,i]=msw.dataset.msw.split(':'); sel[id]=+i; renderModal(); return; }
+      const op=e.target.closest('[data-open]'); if(op){ openModal(op.dataset.open); return; }
+      const ms=e.target.closest('[data-msize]'); if(ms){ mst.size=ms.dataset.msize; renderModal(); return; }
+      if(e.target.closest('[data-madd]')){ if(!mst.size){ toast(tr('chooseSize'),false); return; } addToCart(mst.id,sel[mst.id],mst.size); closeModal(); return; }
+      if(e.target.closest('[data-close]')||e.target.id==='vmodal'){ closeModal(); return; }
+    });
+    document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
+    $$('.lang-btn').forEach(b=>b.addEventListener('click',()=>{ lang=b.dataset.lang; localStorage.setItem('psf_lang',lang); applyI18n(); render(); if($('#vmodal').classList.contains('on')) renderModal(); $$('.lang-btn').forEach(x=>x.classList.toggle('is-active',x.dataset.lang===lang)); }));
+    $$('.theme-btn').forEach(b=>b.addEventListener('click',()=>{ const n=b.dataset.themePick; if(n==='creme')document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme',n); localStorage.setItem('psf_theme',n); $$('.theme-btn').forEach(x=>x.classList.toggle('is-active',x.dataset.themePick===n)); }));
+    // Fenster-weites Drag&Drop verhindert versehentliches Browser-Öffnen der Datei
+    ['dragover','drop'].forEach(ev=>window.addEventListener(ev,e=>{ if(e.target.closest('.vcard__media')) return; e.preventDefault(); }));
+
+    function applyI18n(){ $$('[data-i]').forEach(el=>{const v=tr(el.getAttribute('data-i'));if(v)el.textContent=v;}); document.documentElement.lang=lang; }
+
+    /* ---- Warenkorb-Zähler initial ---- */
+    (function(){ const cart=JSON.parse(localStorage.getItem('psf_cart')||'[]'); const cc=cart.reduce((n,i)=>n+i.qty,0); const b=$('.cart-count'); b.textContent=cc; if(cc>0) b.classList.add('show'); })();
+
+    applyI18n(); render();
+  })();
+  </script>
+</body>
+</html>

@@ -12,7 +12,7 @@
     de: {
       dir: "ltr",
       nav_new: "Neu", nav_women: "Damen", nav_men: "Herren", nav_design: "Eigenes Design",
-      nav_reels: "Videos", nav_contact: "Kontakt",
+      nav_video: "Video-Shop", nav_reels: "Videos", nav_contact: "Kontakt",
       hero_eyebrow: "Neu in Hamburg · Made in Italy",
       hero_title_a: "Mode, die es hier", hero_title_em: "so noch nicht gibt.",
       hero_text: "Hochwertige, junge Bekleidung – in Italien handverlesen. Fresh, modern, limitiert. Und wenn du willst: mit deinem ganz eigenen Design.",
@@ -52,7 +52,7 @@
     en: {
       dir: "ltr",
       nav_new: "New", nav_women: "Women", nav_men: "Men", nav_design: "Custom Design",
-      nav_reels: "Videos", nav_contact: "Contact",
+      nav_video: "Video shop", nav_reels: "Videos", nav_contact: "Contact",
       hero_eyebrow: "New in Hamburg · Made in Italy",
       hero_title_a: "Fashion you", hero_title_em: "won't find here yet.",
       hero_text: "High-quality young fashion – hand-picked in Italy. Fresh, modern, limited. And if you like: printed with your very own design.",
@@ -92,7 +92,7 @@
     ru: {
       dir: "ltr",
       nav_new: "Новинки", nav_women: "Женщины", nav_men: "Мужчины", nav_design: "Свой дизайн",
-      nav_reels: "Видео", nav_contact: "Контакты",
+      nav_video: "Видео-шоп", nav_reels: "Видео", nav_contact: "Контакты",
       hero_eyebrow: "Новинка в Гамбурге · Made in Italy",
       hero_title_a: "Мода, которой здесь", hero_title_em: "ещё нет.",
       hero_text: "Качественная молодёжная одежда – отобрана вручную в Италии. Свежо, модно, лимитированно. А хочешь – с твоим собственным дизайном.",
@@ -132,7 +132,7 @@
     es: {
       dir: "ltr",
       nav_new: "Nuevo", nav_women: "Mujer", nav_men: "Hombre", nav_design: "Diseño propio",
-      nav_reels: "Vídeos", nav_contact: "Contacto",
+      nav_video: "Video-tienda", nav_reels: "Vídeos", nav_contact: "Contacto",
       hero_eyebrow: "Novedad en Hamburgo · Made in Italy",
       hero_title_a: "Moda que aquí", hero_title_em: "aún no existe.",
       hero_text: "Ropa joven de alta calidad – elegida a mano en Italia. Fresca, moderna, limitada. Y si quieres: con tu propio diseño impreso.",
