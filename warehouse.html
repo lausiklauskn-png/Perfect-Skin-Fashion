@@ -296,6 +296,7 @@ footer.app{text-align:center;color:var(--txt-faint);font-size:12px;padding:24px 
       <button data-lang="de" class="on">DE</button>
       <button data-lang="en">EN</button>
     </div>
+    <button class="btn ghost sm" id="ai-settings-btn" onclick="openAiSettings()" title="KI">🔑 <span data-i="aiBtn">KI</span></button>
     <a class="link-shop" href="index.html" data-i="toShop">← zum Shop</a>
   </div>
 </header>
@@ -519,7 +520,11 @@ footer.app{text-align:center;color:var(--txt-faint);font-size:12px;padding:24px 
       <label class="fld"><span class="lb" data-i="fSku">SKU / Barcode *</span><input id="af-sku" autocomplete="off"></label>
       <label class="fld"><span class="lb" data-i="fEmoji">Symbol/Kürzel</span><input id="af-emoji" maxlength="3" placeholder="👗" autocomplete="off"></label>
     </div>
-    <label class="fld"><span class="lb" data-i="fName">Name *</span><input id="af-name" autocomplete="off"></label>
+    <label class="fld"><span class="lb" data-i="fName">Name * <span class="hint" style="font-weight:400" data-i="aiNameHint">— Stichworte tippen, dann ✨ KI-Vorschlag</span></span><input id="af-name" autocomplete="off"></label>
+    <div class="row-actions" style="margin:-4px 0 4px">
+      <button type="button" class="btn blue sm" id="af-ai-btn" onclick="aiSuggestArticle()">✨ <span data-i="aiSuggest">KI-Vorschlag</span></button>
+      <span id="af-ai-status" class="hint"></span>
+    </div>
     <div class="grid">
       <label class="fld"><span class="lb" data-i="fCat">Kategorie</span>
         <select id="af-cat">
@@ -564,8 +569,34 @@ footer.app{text-align:center;color:var(--txt-faint);font-size:12px;padding:24px 
   </div>
 </div>
 
+<!-- KI-Einstellungen -->
+<div class="modal-back" id="ai-modal-back">
+  <div class="modal">
+    <h3 data-i="aiTitle">KI-Einstellungen</h3>
+    <div class="sub" data-i="aiSub">Eigener KI-Schlüssel (BYOK). Warendaten sind keine personenbezogenen Daten. Der Schlüssel bleibt in deinem Browser.</div>
+    <label class="fld"><span class="lb" data-i="aiProvider">KI-Anbieter</span>
+      <select id="ai-provider">
+        <option value="claude">Claude (Anthropic)</option>
+        <option value="mistral" data-i="aiMistral">Mistral (EU · DSGVO)</option>
+      </select></label>
+    <label class="fld"><span class="lb" data-i="aiKey">API-Schlüssel</span>
+      <input id="ai-key" type="password" autocomplete="off" placeholder="sk-…"></label>
+    <label class="fld"><span class="lb" data-i="aiPin">PIN (optional, zum Verschlüsseln)</span>
+      <input id="ai-pin" type="password" inputmode="numeric" autocomplete="off" placeholder="z.B. 4-stellig"></label>
+    <div class="hint" data-i="aiPinHint">Mit PIN wird der Schlüssel verschlüsselt gespeichert (empfohlen). Ohne PIN wird er unverschlüsselt im Browser abgelegt — nur auf deinem eigenen Gerät nutzen.</div>
+    <div id="ai-status" class="hint" style="margin-top:8px"></div>
+    <div class="modal-actions" style="flex-wrap:wrap">
+      <button class="btn ghost" onclick="closeModal('ai-modal-back')" data-i="cancel">Abbrechen</button>
+      <button class="btn ghost" id="ai-clear-btn" onclick="clearAiSettings()" data-i="aiClear">Entfernen</button>
+      <button class="btn blue" id="ai-unlock-btn" onclick="unlockAiSettings()" data-i="aiUnlock">Entsperren</button>
+      <button class="btn primary" onclick="saveAiSettings()" data-i="save">Speichern</button>
+    </div>
+  </div>
+</div>
+
 <div id="toasts"></div>
 
+<script src="assets/ai/aiclient.js"></script>
 <script>
 "use strict";
 /* ============================================================
@@ -631,7 +662,21 @@ const I18N = {
     publishBtn:"Auf diesem Gerät veröffentlichen", dlProducts:"products.json (für alle Besucher)",
     shopFoot:"„Veröffentlichen\" macht die freigegebenen Artikel sofort im Shop auf DIESEM Gerät sichtbar (Shop öffnen + Hard-Reload). Für ALLE Besucher: „products.json\" herunterladen und ins Repo legen lassen.",
     shopEmpty:"Noch nichts freigegeben. Gib unter „Artikel\" Teile frei (🛍️).",
-    published:"Veröffentlicht:", publishErr:"Veröffentlichen fehlgeschlagen."
+    published:"Veröffentlicht:", publishErr:"Veröffentlichen fehlgeschlagen.",
+    // KI (Phase B)
+    aiBtn:"KI", aiTitle:"KI-Einstellungen",
+    aiSub:"Eigener KI-Schlüssel (BYOK). Warendaten sind keine personenbezogenen Daten. Der Schlüssel bleibt in deinem Browser.",
+    aiProvider:"KI-Anbieter", aiMistral:"Mistral (EU · DSGVO)", aiKey:"API-Schlüssel",
+    aiPin:"PIN (optional, zum Verschlüsseln)",
+    aiPinHint:"Mit PIN wird der Schlüssel verschlüsselt gespeichert (empfohlen). Ohne PIN wird er unverschlüsselt im Browser abgelegt — nur auf deinem eigenen Gerät nutzen.",
+    aiClear:"Entfernen", aiUnlock:"Entsperren", aiSuggest:"KI-Vorschlag",
+    aiNameHint:"— Stichworte tippen, dann ✨ KI-Vorschlag",
+    aiNone:"Kein Schlüssel hinterlegt.", aiLocked:"gesperrt (PIN nötig)", aiActive:"aktiv",
+    aiNeedKey:"Bitte API-Schlüssel eingeben.", aiSaved:"KI-Schlüssel gespeichert.",
+    aiNeedPin:"Bitte PIN eingeben.", aiUnlocked:"Entsperrt.", aiWrongPin:"Falscher PIN.",
+    aiCleared:"KI-Schlüssel entfernt.", aiNoneShort:"Kein KI-Schlüssel — bitte hinterlegen.",
+    aiLockedShort:"KI gesperrt — bitte entsperren.", aiNeedHint:"Bitte erst Stichworte im Namensfeld tippen.",
+    aiThinking:"KI denkt nach…", aiDone:"KI-Vorschlag übernommen.", aiError:"KI-Fehler"
   },
   en:{
     brandTitle:"PSF · Inventory", probe:"Trial phase", toShop:"← to shop",
@@ -691,7 +736,21 @@ const I18N = {
     publishBtn:"Publish on this device", dlProducts:"products.json (for all visitors)",
     shopFoot:"“Publish” makes released items visible in the shop on THIS device instantly (open shop + hard reload). For ALL visitors: download “products.json” and have it committed to the repo.",
     shopEmpty:"Nothing released yet. Release items under “Items” (🛍️).",
-    published:"Published:", publishErr:"Publishing failed."
+    published:"Published:", publishErr:"Publishing failed.",
+    // AI (Phase B)
+    aiBtn:"AI", aiTitle:"AI settings",
+    aiSub:"Your own AI key (BYOK). Product data is not personal data. The key stays in your browser.",
+    aiProvider:"AI provider", aiMistral:"Mistral (EU · GDPR)", aiKey:"API key",
+    aiPin:"PIN (optional, to encrypt)",
+    aiPinHint:"With a PIN the key is stored encrypted (recommended). Without a PIN it is stored unencrypted in the browser — use on your own device only.",
+    aiClear:"Remove", aiUnlock:"Unlock", aiSuggest:"AI suggestion",
+    aiNameHint:"— type keywords, then ✨ AI suggestion",
+    aiNone:"No key stored.", aiLocked:"locked (PIN needed)", aiActive:"active",
+    aiNeedKey:"Please enter an API key.", aiSaved:"AI key saved.",
+    aiNeedPin:"Please enter the PIN.", aiUnlocked:"Unlocked.", aiWrongPin:"Wrong PIN.",
+    aiCleared:"AI key removed.", aiNoneShort:"No AI key — please add one.",
+    aiLockedShort:"AI locked — please unlock.", aiNeedHint:"Please type keywords in the name field first.",
+    aiThinking:"AI is thinking…", aiDone:"AI suggestion applied.", aiError:"AI error"
   }
 };
 let LANG = localStorage.getItem('psf_wws_lang') || 'de';
@@ -895,6 +954,74 @@ function downloadProducts(){
   toast(`products.json · ${prods.length} ${t('tArts')}`,'ok');
 }
 
+/* ============================================================
+   KI-Einstellungen + Vorschlag (Phase B)
+   ============================================================ */
+function aiStatusText(){
+  if(!window.PSFAi) return '';
+  if(!PSFAi.isConfigured()) return t('aiNone');
+  const prov=(PSFAi.PROVIDERS[PSFAi.provider()]||{}).label||PSFAi.provider();
+  if(PSFAi.needsPin() && !PSFAi.isReady()) return `🔒 ${prov} · ${t('aiLocked')}`;
+  return `✅ ${prov} · ${t('aiActive')}`;
+}
+function refreshAiStatus(){
+  if(!window.PSFAi) return;
+  const s=document.getElementById('ai-status'); if(s) s.textContent=aiStatusText();
+  const ub=document.getElementById('ai-unlock-btn');
+  if(ub) ub.style.display=(PSFAi.isConfigured()&&PSFAi.needsPin()&&!PSFAi.isReady())?'':'none';
+  const cb=document.getElementById('ai-clear-btn');
+  if(cb) cb.style.display=PSFAi.isConfigured()?'':'none';
+  const hb=document.getElementById('ai-settings-btn');
+  if(hb) hb.style.opacity=PSFAi.isReady()?'1':(PSFAi.isConfigured()?'.85':'.65');
+}
+function openAiSettings(){
+  const m=PSFAi.meta();
+  document.getElementById('ai-provider').value=(m&&m.provider)||'claude';
+  document.getElementById('ai-key').value='';
+  document.getElementById('ai-pin').value='';
+  refreshAiStatus();
+  closeModal('confirm-back');
+  document.getElementById('ai-modal-back').classList.add('on');
+}
+async function saveAiSettings(){
+  const provider=document.getElementById('ai-provider').value;
+  const key=document.getElementById('ai-key').value.trim();
+  const pin=document.getElementById('ai-pin').value.trim();
+  if(!key){ toast(t('aiNeedKey'),'warn'); return; }
+  await PSFAi.save({provider,key,pin:pin||undefined});
+  refreshAiStatus(); toast(t('aiSaved'),'ok'); closeModal('ai-modal-back');
+}
+async function unlockAiSettings(){
+  const pin=document.getElementById('ai-pin').value.trim();
+  if(!pin){ toast(t('aiNeedPin'),'warn'); return; }
+  const ok=await PSFAi.unlock(pin);
+  refreshAiStatus();
+  if(ok){ toast(t('aiUnlocked'),'ok'); closeModal('ai-modal-back'); } else toast(t('aiWrongPin'),'err');
+}
+function clearAiSettings(){ PSFAi.clear(); refreshAiStatus(); toast(t('aiCleared'),'ok'); }
+
+async function aiSuggestArticle(){
+  if(!window.PSFAi || !PSFAi.isConfigured()){ toast(t('aiNoneShort'),'warn'); openAiSettings(); return; }
+  if(PSFAi.needsPin() && !PSFAi.isReady()){ toast(t('aiLockedShort'),'warn'); openAiSettings(); return; }
+  const hint=document.getElementById('af-name').value.trim();
+  const sku=document.getElementById('af-sku').value.trim();
+  if(!hint){ toast(t('aiNeedHint'),'warn'); document.getElementById('af-name').focus(); return; }
+  const btn=document.getElementById('af-ai-btn'), st=document.getElementById('af-ai-status');
+  btn.disabled=true; st.textContent='… '+t('aiThinking');
+  try{
+    const s=await PSFAi.suggestArticle({hint,sku});
+    const set=(k,v)=>{ if(v!=null && v!=='') document.getElementById(k).value=v; };
+    set('af-name',s.name); document.getElementById('af-cat').value=s.cat||document.getElementById('af-cat').value;
+    set('af-color',s.color); set('af-size',s.size); set('af-emoji',s.emoji); if(s.vk) set('af-vk',s.vk);
+    st.textContent='✨ '+t('aiDone')+(s.desc?(' — '+s.desc):'');
+    toast(t('aiDone'),'ok');
+  }catch(e){
+    st.textContent='';
+    if(String(e.message)==='locked'){ toast(t('aiLockedShort'),'warn'); openAiSettings(); }
+    else toast(t('aiError')+' ('+e.message+')','err');
+  }finally{ btn.disabled=false; }
+}
+
 function renderDashboard(){
   const nArt=ARTICLES.length;
   const units=ARTICLES.reduce((s,a)=>s+(+a.stock||0),0);
@@ -1084,6 +1211,7 @@ function openArticleDialog(id, prefillSku){
     if(prefillSku) set('af-sku',prefillSku);
   }
   // ensure other modals closed
+  const aiSt=document.getElementById('af-ai-status'); if(aiSt) aiSt.textContent='';
   closeModal('confirm-back');
   back.classList.add('on');
   setTimeout(()=>document.getElementById(id?'af-name':'af-sku').focus(),50);
@@ -1341,6 +1469,7 @@ async function init(){
     await seedIfEmpty();
     await refreshCaches();
     applyI18n(); // also calls renderAll
+    if(window.PSFAi){ PSFAi.loadIfPlain(); refreshAiStatus(); } // KI: Plain-Schlüssel auto-aktivieren
     if(!_detectorSupported){
       // soft note in scan hints
       document.querySelectorAll('[id^="scanbtn-"]').forEach(b=>b.title=t('scanNoSupport'));
