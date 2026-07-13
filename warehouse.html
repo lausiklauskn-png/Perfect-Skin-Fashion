@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#14100f">
+<title>PSF · Warenwirtschaft</title>
+<style>
+/* ============================================================
+   Perfect Skin Fashion — internal warehouse management (WWS)
+   Single-file, offline, IndexedDB. No external dependencies.
+   ============================================================ */
+
+/* ---- Fonts (local, relative paths) ---- */
+@font-face{
+  font-family:'Abril Fatface';
+  font-style:normal;font-weight:400;font-display:swap;
+  src:url('assets/fonts/AbrilFatface-400-latin.woff2') format('woff2');
+}
+@font-face{
+  font-family:'Lato';
+  font-style:normal;font-weight:400;font-display:swap;
+  src:url('assets/fonts/Lato-400-latin.woff2') format('woff2');
+}
+@font-face{
+  font-family:'Lato';
+  font-style:normal;font-weight:700;font-display:swap;
+  src:url('assets/fonts/Lato-700-latin.woff2') format('woff2');
+}
+@font-face{
+  font-family:'Lato';
+  font-style:normal;font-weight:300;font-display:swap;
+  src:url('assets/fonts/Lato-300-latin.woff2') format('woff2');
+}
+
+/* ---- Tokens ---- */
+:root{
+  --bg:#14100f;
+  --bg2:#1d1715;
+  --card:#241c19;
+  --card2:#2c2320;
+  --line:#3a2e29;
+  --txt:#f4ece8;
+  --txt-dim:#b6a69e;
+  --txt-faint:#8a7a72;
+  --coral:#ff4d6d;
+  --coral-dk:#d93758;
+  --blue:#4d9bff;
+  --ok:#4dd0a0;
+  --warn:#ffb14d;
+  --danger:#ff5b5b;
+  --rainbow:linear-gradient(90deg,#ff4d6d,#ff9e43,#ffd84d,#4dd0a0,#4d9bff,#a24dff);
+  --radius:14px;
+  --shadow:0 8px 26px rgba(0,0,0,.45);
+  --shadow-sm:0 3px 12px rgba(0,0,0,.35);
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  font-family:'Lato','Helvetica Neue',Helvetica,Arial,sans-serif;
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(255,77,109,.10), transparent 60%),
+    radial-gradient(900px 500px at -10% 20%, rgba(77,155,255,.08), transparent 55%),
+    var(--bg);
+  color:var(--txt);
+  min-height:100vh;
+  font-size:15px;
+  line-height:1.5;
+}
+h1,h2,h3{font-family:'Abril Fatface',Georgia,'Times New Roman',serif;font-weight:400;letter-spacing:.3px}
+button{font-family:inherit}
+
+/* ---- Header ---- */
+header.app{
+  position:sticky;top:0;z-index:40;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  padding:12px 18px;
+  background:linear-gradient(180deg, rgba(29,23,21,.96), rgba(29,23,21,.86));
+  backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line);
+}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.brand .mark{
+  width:42px;height:42px;border-radius:12px;flex:none;
+  display:grid;place-items:center;font-family:'Abril Fatface',serif;font-size:20px;color:#fff;
+  background:var(--rainbow);box-shadow:var(--shadow-sm);
+}
+.brand .txt{min-width:0}
+.brand .txt .t1{font-family:'Abril Fatface',serif;font-size:19px;line-height:1;white-space:nowrap}
+.brand .txt .t2{font-size:11.5px;color:var(--txt-faint);letter-spacing:2px;text-transform:uppercase}
+.badge-probe{
+  font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;
+  padding:5px 11px;border-radius:999px;color:#1a1210;
+  background:var(--rainbow);box-shadow:var(--shadow-sm);
+}
+.header-spacer{flex:1 1 auto}
+.header-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.lang-switch{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--bg2)}
+.lang-switch button{
+  background:transparent;border:0;color:var(--txt-dim);padding:6px 12px;font-size:12.5px;font-weight:700;cursor:pointer
+}
+.lang-switch button.on{background:var(--coral);color:#fff}
+.link-shop{
+  color:var(--txt-dim);text-decoration:none;font-size:13px;padding:7px 12px;border-radius:10px;
+  border:1px solid var(--line);background:var(--bg2);white-space:nowrap
+}
+.link-shop:hover{color:var(--txt);border-color:var(--coral)}
+
+/* ---- Nav tabs ---- */
+nav.tabs{
+  display:flex;gap:6px;overflow-x:auto;padding:12px 18px 0;
+  scrollbar-width:none;
+}
+nav.tabs::-webkit-scrollbar{display:none}
+nav.tabs button{
+  flex:none;
+  background:var(--bg2);border:1px solid var(--line);color:var(--txt-dim);
+  padding:10px 16px;border-radius:12px 12px 0 0;font-size:14px;font-weight:700;cursor:pointer;
+  border-bottom:0;position:relative;top:1px;transition:all .15s;
+}
+nav.tabs button .ic{margin-right:7px}
+nav.tabs button:hover{color:var(--txt);transform:translateY(-1px)}
+nav.tabs button.on{background:var(--card);color:var(--txt);border-color:var(--line)}
+nav.tabs button.on::after{
+  content:"";position:absolute;left:0;right:0;top:0;height:3px;border-radius:3px;background:var(--rainbow)
+}
+
+main{padding:0 18px 90px;max-width:1200px;margin:0 auto}
+.panel{display:none;animation:fade .25s ease}
+.panel.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.card{
+  background:linear-gradient(180deg,var(--card),var(--card2));
+  border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:18px;margin-top:16px;
+}
+.card > h2{margin:0 0 4px;font-size:20px}
+.card > .sub{color:var(--txt-faint);font-size:13px;margin-bottom:14px}
+
+/* ---- Buttons ---- */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  border:0;border-radius:12px;padding:11px 18px;font-size:14px;font-weight:700;cursor:pointer;
+  color:#fff;background:linear-gradient(180deg,#3a2e29,#2c2320);border:1px solid var(--line);
+  box-shadow:var(--shadow-sm);transition:transform .12s, box-shadow .12s, filter .12s;position:relative;overflow:hidden;
+}
+.btn::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.14),transparent 45%);opacity:.5;pointer-events:none}
+.btn:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(0,0,0,.5);filter:brightness(1.06)}
+.btn:active{transform:translateY(0)}
+.btn.primary{background:linear-gradient(180deg,#ff6b85,var(--coral));border-color:var(--coral-dk)}
+.btn.blue{background:linear-gradient(180deg,#6bb0ff,var(--blue));border-color:#2f78d6}
+.btn.ghost{background:var(--bg2);color:var(--txt-dim)}
+.btn.ghost:hover{color:var(--txt)}
+.btn.sm{padding:7px 12px;font-size:12.5px;border-radius:10px}
+.btn.danger{background:linear-gradient(180deg,#ff7a7a,#e04848);border-color:#c53a3a}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none;filter:none}
+
+/* ---- Forms ---- */
+label.fld{display:block;margin:0 0 12px}
+label.fld .lb{display:block;font-size:12px;color:var(--txt-dim);margin-bottom:5px;font-weight:700;letter-spacing:.3px}
+input,select,textarea{
+  width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;
+  color:var(--txt);padding:10px 12px;font-size:14px;font-family:inherit;
+}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--coral);box-shadow:0 0 0 3px rgba(255,77,109,.16)}
+.grid{display:grid;gap:0 14px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.row-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+
+/* ---- Dashboard tiles ---- */
+.tiles{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));margin-top:16px}
+.tile{
+  background:linear-gradient(180deg,var(--card),var(--card2));
+  border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);
+  position:relative;overflow:hidden;
+}
+.tile::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--rainbow)}
+.tile .k{font-size:12px;color:var(--txt-faint);text-transform:uppercase;letter-spacing:1px}
+.tile .v{font-family:'Abril Fatface',serif;font-size:34px;line-height:1.1;margin-top:6px}
+.tile .u{font-size:12px;color:var(--txt-dim);margin-top:2px}
+.tile.alert .v{color:var(--danger)}
+.tile.money .v{color:var(--ok)}
+
+/* ---- Tables ---- */
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:12px;border:1px solid var(--line);margin-top:14px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:640px}
+thead th{
+  text-align:left;padding:11px 12px;background:var(--bg2);color:var(--txt-dim);
+  font-size:11.5px;text-transform:uppercase;letter-spacing:.6px;position:sticky;top:0;white-space:nowrap;
+  border-bottom:1px solid var(--line)
+}
+tbody td{padding:10px 12px;border-bottom:1px solid rgba(58,46,41,.6);vertical-align:middle}
+tbody tr:hover{background:rgba(255,255,255,.02)}
+tbody tr.low{background:rgba(255,91,91,.09)}
+tbody tr.low td:first-child{box-shadow:inset 3px 0 0 var(--danger)}
+.emoji-cell{font-size:20px}
+.mono{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+.right{text-align:right}
+.center{text-align:center}
+.pill{display:inline-block;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.3px}
+.pill.cat{background:rgba(77,155,255,.14);color:#a9cdff}
+.pill.in{background:rgba(77,208,160,.16);color:#8fe6c6}
+.pill.out{background:rgba(255,91,91,.16);color:#ffb0b0}
+.pill.low{background:rgba(255,91,91,.2);color:#ffbdbd}
+.pill.demo{background:rgba(255,216,77,.18);color:#ffe59a}
+.tbl-actions{display:flex;gap:6px}
+.icon-btn{
+  background:var(--bg2);border:1px solid var(--line);color:var(--txt-dim);border-radius:8px;
+  width:32px;height:32px;display:grid;place-items:center;cursor:pointer;font-size:14px
+}
+.icon-btn:hover{color:var(--txt);border-color:var(--coral)}
+.icon-btn.del:hover{border-color:var(--danger);color:var(--danger)}
+
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px}
+.toolbar .search{flex:1 1 220px;min-width:180px}
+.toolbar select{width:auto;min-width:150px}
+
+.empty{padding:36px 16px;text-align:center;color:var(--txt-faint)}
+.empty .big{font-size:34px;margin-bottom:8px}
+
+/* ---- Scan / camera ---- */
+.scan-box{
+  display:grid;gap:16px;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);align-items:start
+}
+@media(max-width:760px){.scan-box{grid-template-columns:1fr}}
+.cam-stage{
+  position:relative;background:#000;border:1px solid var(--line);border-radius:12px;overflow:hidden;
+  aspect-ratio:4/3;display:grid;place-items:center;
+}
+.cam-stage video{width:100%;height:100%;object-fit:cover;display:none}
+.cam-stage.live video{display:block}
+.cam-stage .cam-hint{position:absolute;inset:0;display:grid;place-items:center;color:var(--txt-faint);
+  text-align:center;padding:20px;font-size:13px}
+.cam-stage.live .cam-hint{display:none}
+.scan-frame{position:absolute;inset:16% 12%;border:2px solid rgba(255,77,109,.85);border-radius:10px;display:none;
+  box-shadow:0 0 0 4000px rgba(0,0,0,.25)}
+.cam-stage.live .scan-frame{display:block}
+.scan-laser{position:absolute;left:0;right:0;height:2px;background:var(--coral);box-shadow:0 0 12px var(--coral);
+  animation:laser 1.8s ease-in-out infinite}
+@keyframes laser{0%,100%{top:6%}50%{top:94%}}
+.scan-detected{
+  position:absolute;left:10px;bottom:10px;right:10px;background:rgba(20,16,15,.9);border:1px solid var(--coral);
+  border-radius:8px;padding:8px 10px;font-size:12px;color:var(--ok);display:none
+}
+.book-entry{border-left:3px solid var(--line);padding-left:14px}
+
+/* ---- Toast ---- */
+#toasts{position:fixed;left:0;right:0;bottom:18px;display:flex;flex-direction:column;align-items:center;gap:8px;z-index:80;pointer-events:none}
+.toast{
+  pointer-events:auto;background:var(--bg2);border:1px solid var(--line);border-left:4px solid var(--coral);
+  color:var(--txt);padding:12px 16px;border-radius:12px;box-shadow:var(--shadow);font-size:14px;max-width:92vw;
+  display:flex;align-items:center;gap:10px;animation:tin .2s ease;
+}
+.toast.ok{border-left-color:var(--ok)}
+.toast.warn{border-left-color:var(--warn)}
+.toast.err{border-left-color:var(--danger)}
+@keyframes tin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* ---- Modal ---- */
+.modal-back{position:fixed;inset:0;background:rgba(8,6,5,.66);backdrop-filter:blur(3px);z-index:70;
+  display:none;align-items:center;justify-content:center;padding:16px}
+.modal-back.on{display:flex}
+.modal{
+  background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--line);border-radius:16px;
+  box-shadow:var(--shadow);width:min(560px,96vw);max-height:90vh;overflow:auto;padding:22px
+}
+.modal h3{margin:0 0 4px;font-size:22px}
+.modal .sub{color:var(--txt-faint);font-size:13px;margin-bottom:16px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:8px;flex-wrap:wrap}
+
+.hint{font-size:12.5px;color:var(--txt-faint);margin-top:8px}
+.divider{height:1px;background:var(--line);margin:16px 0}
+footer.app{text-align:center;color:var(--txt-faint);font-size:12px;padding:24px 16px 40px}
+.kbd{font-family:monospace;background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:12px}
+</style>
+</head>
+<body>
+
+<header class="app">
+  <div class="brand">
+    <div class="mark">PSF</div>
+    <div class="txt">
+      <div class="t1" data-i="brandTitle">PSF · Warenwirtschaft</div>
+      <div class="t2">Perfect Skin Fashion · Hamburg</div>
+    </div>
+  </div>
+  <span class="badge-probe" data-i="probe">Probephase</span>
+  <div class="header-spacer"></div>
+  <div class="header-tools">
+    <div class="lang-switch" id="langSwitch">
+      <button data-lang="de" class="on">DE</button>
+      <button data-lang="en">EN</button>
+    </div>
+    <a class="link-shop" href="index.html" data-i="toShop">← zum Shop</a>
+  </div>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button data-tab="dash" class="on"><span class="ic">📊</span><span data-i="tabDash">Dashboard</span></button>
+  <button data-tab="in"><span class="ic">📥</span><span data-i="tabIn">Wareneingang</span></button>
+  <button data-tab="out"><span class="ic">📤</span><span data-i="tabOut">Warenausgang</span></button>
+  <button data-tab="articles"><span class="ic">👗</span><span data-i="tabArticles">Artikel</span></button>
+  <button data-tab="journal"><span class="ic">📜</span><span data-i="tabJournal">Journal</span></button>
+  <button data-tab="data"><span class="ic">💾</span><span data-i="tabData">Daten</span></button>
+</nav>
+
+<main>
+
+  <!-- ============ DASHBOARD ============ -->
+  <section class="panel on" id="panel-dash">
+    <div class="tiles">
+      <div class="tile"><div class="k" data-i="mArticles">Artikel</div><div class="v mono" id="stat-articles">0</div><div class="u" data-i="uSku">verschiedene SKU</div></div>
+      <div class="tile"><div class="k" data-i="mUnits">Stückzahl</div><div class="v mono" id="stat-units">0</div><div class="u" data-i="uOnStock">auf Lager</div></div>
+      <div class="tile money"><div class="k" data-i="mValueVk">Warenwert (VK)</div><div class="v mono" id="stat-valuevk">0 €</div><div class="u" id="stat-valueek">EK 0 €</div></div>
+      <div class="tile alert"><div class="k" data-i="mLow">Unter Mindest</div><div class="v mono" id="stat-low">0</div><div class="u" data-i="uReorder">nachbestellen</div></div>
+    </div>
+
+    <div class="card">
+      <h2 data-i="quickTitle">Schnellzugriff</h2>
+      <div class="sub" data-i="quickSub">Direkt buchen — per Scan oder manuell.</div>
+      <div class="row-actions">
+        <button class="btn primary" onclick="go('in')">📥 <span data-i="tabIn">Wareneingang</span></button>
+        <button class="btn blue" onclick="go('out')">📤 <span data-i="tabOut">Warenausgang</span></button>
+        <button class="btn ghost" onclick="openArticleDialog()">➕ <span data-i="newArticle">Neuer Artikel</span></button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 data-i="lowTitle">Nachbestell-Liste</h2>
+      <div class="sub" data-i="lowSub">Artikel auf oder unter Mindestbestand.</div>
+      <div id="low-list"></div>
+    </div>
+
+    <div class="card">
+      <h2 data-i="recentTitle">Letzte Bewegungen</h2>
+      <div id="recent-list"></div>
+    </div>
+  </section>
+
+  <!-- ============ WARENEINGANG ============ -->
+  <section class="panel" id="panel-in">
+    <div class="card">
+      <h2 data-i="inTitle">Wareneingang buchen</h2>
+      <div class="sub" data-i="inSub">Italien-Einkauf & Eigen-Design einbuchen. Scan oder manuelle Eingabe.</div>
+      <div class="scan-box">
+        <div>
+          <div class="cam-stage" id="cam-in">
+            <video id="video-in" playsinline muted></video>
+            <div class="scan-frame"><div class="scan-laser"></div></div>
+            <div class="cam-hint">
+              <div style="font-size:34px;margin-bottom:8px">📷</div>
+              <div data-i="camHint">Kamera aus. Auf „Scanner starten" tippen, um einen Barcode zu erfassen.</div>
+            </div>
+            <div class="scan-detected" id="det-in"></div>
+          </div>
+          <div class="row-actions">
+            <button class="btn blue sm" id="scanbtn-in" onclick="toggleScan('in')">📷 <span data-i="startScan">Scanner starten</span></button>
+          </div>
+          <div class="hint" data-i="scanHint">Nutzt die native BarcodeDetector-API des Geräts. Nicht verfügbar? Code einfach unten eintippen.</div>
+        </div>
+        <div>
+          <label class="fld"><span class="lb" data-i="fSku">SKU / Barcode</span>
+            <input id="in-sku" placeholder="z.B. PSF-1001" autocomplete="off"></label>
+          <div id="in-found" class="hint"></div>
+          <label class="fld"><span class="lb" data-i="fQty">Menge</span>
+            <input id="in-qty" type="number" min="1" value="1" inputmode="numeric"></label>
+          <label class="fld"><span class="lb" data-i="fNote">Notiz (optional)</span>
+            <input id="in-note" placeholder="z.B. Lieferung Mailand KW..." autocomplete="off"></label>
+          <div class="row-actions">
+            <button class="btn primary" onclick="bookMovement('in')">📥 <span data-i="bookIn">Eingang buchen</span></button>
+            <button class="btn ghost" onclick="lookupSku('in')" data-i="check">Prüfen</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ WARENAUSGANG ============ -->
+  <section class="panel" id="panel-out">
+    <div class="card">
+      <h2 data-i="outTitle">Warenausgang buchen</h2>
+      <div class="sub" data-i="outSub">Verkauf, Retoure, Korrektur oder Schwund abbuchen.</div>
+      <div class="scan-box">
+        <div>
+          <div class="cam-stage" id="cam-out">
+            <video id="video-out" playsinline muted></video>
+            <div class="scan-frame"><div class="scan-laser"></div></div>
+            <div class="cam-hint">
+              <div style="font-size:34px;margin-bottom:8px">📷</div>
+              <div data-i="camHint">Kamera aus. Auf „Scanner starten" tippen, um einen Barcode zu erfassen.</div>
+            </div>
+            <div class="scan-detected" id="det-out"></div>
+          </div>
+          <div class="row-actions">
+            <button class="btn blue sm" id="scanbtn-out" onclick="toggleScan('out')">📷 <span data-i="startScan">Scanner starten</span></button>
+          </div>
+          <div class="hint" data-i="scanHint">Nutzt die native BarcodeDetector-API des Geräts. Nicht verfügbar? Code einfach unten eintippen.</div>
+        </div>
+        <div>
+          <label class="fld"><span class="lb" data-i="fSku">SKU / Barcode</span>
+            <input id="out-sku" placeholder="z.B. PSF-1001" autocomplete="off"></label>
+          <div id="out-found" class="hint"></div>
+          <label class="fld"><span class="lb" data-i="fQty">Menge</span>
+            <input id="out-qty" type="number" min="1" value="1" inputmode="numeric"></label>
+          <label class="fld"><span class="lb" data-i="fReason">Grund</span>
+            <select id="out-reason">
+              <option value="Verkauf" data-i="rSale">Verkauf</option>
+              <option value="Retoure" data-i="rReturn">Retoure</option>
+              <option value="Korrektur" data-i="rFix">Korrektur</option>
+              <option value="Schwund" data-i="rLoss">Schwund</option>
+            </select></label>
+          <div class="row-actions">
+            <button class="btn primary" onclick="bookMovement('out')">📤 <span data-i="bookOut">Ausgang buchen</span></button>
+            <button class="btn ghost" onclick="lookupSku('out')" data-i="check">Prüfen</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ARTIKEL ============ -->
+  <section class="panel" id="panel-articles">
+    <div class="card">
+      <h2 data-i="articlesTitle">Artikelstammdaten</h2>
+      <div class="sub" data-i="articlesSub">Alle Artikel anlegen, bearbeiten, löschen. Bestand farblich markiert.</div>
+      <div class="toolbar">
+        <input class="search" id="art-search" placeholder="🔍 Suche: Name, SKU, Farbe, Lieferant…" oninput="renderArticles()">
+        <select id="art-filter" onchange="renderArticles()">
+          <option value="" data-i="allCats">Alle Kategorien</option>
+          <option value="Damen">Damen</option>
+          <option value="Herren">Herren</option>
+          <option value="Accessoires">Accessoires</option>
+          <option value="Eigen-Design">Eigen-Design</option>
+        </select>
+        <button class="btn primary sm" onclick="openArticleDialog()">➕ <span data-i="newArticle">Neuer Artikel</span></button>
+      </div>
+      <div id="art-total" class="hint"></div>
+      <div id="articles-table"></div>
+    </div>
+  </section>
+
+  <!-- ============ JOURNAL ============ -->
+  <section class="panel" id="panel-journal">
+    <div class="card">
+      <h2 data-i="journalTitle">Bewegungs-Journal</h2>
+      <div class="sub" data-i="journalSub">Chronologische Liste aller Ein- und Ausgänge.</div>
+      <div class="toolbar">
+        <input class="search" id="jrn-search" placeholder="🔍 Suche: SKU, Name, Grund…" oninput="renderJournal()">
+        <select id="jrn-filter" onchange="renderJournal()">
+          <option value="" data-i="allTypes">Alle Typen</option>
+          <option value="in" data-i="tabIn">Wareneingang</option>
+          <option value="out" data-i="tabOut">Warenausgang</option>
+        </select>
+      </div>
+      <div id="journal-table"></div>
+    </div>
+  </section>
+
+  <!-- ============ DATEN ============ -->
+  <section class="panel" id="panel-data">
+    <div class="card">
+      <h2 data-i="dataTitle">Import / Export & Sicherung</h2>
+      <div class="sub" data-i="dataSub">Gesamte Datenbank sichern, wiederherstellen oder als CSV exportieren.</div>
+      <div class="row-actions">
+        <button class="btn primary" onclick="exportJSON()">⬇️ <span data-i="expJson">DB-Sicherung (JSON)</span></button>
+        <button class="btn blue" onclick="exportCSV()">⬇️ <span data-i="expCsv">Bestand (CSV)</span></button>
+        <button class="btn ghost" onclick="document.getElementById('import-file').click()">⬆️ <span data-i="impJson">Sicherung einlesen</span></button>
+        <input type="file" id="import-file" accept="application/json,.json" style="display:none" onchange="importJSON(event)">
+      </div>
+      <div class="divider"></div>
+      <h2 style="font-size:17px" data-i="resetTitle">Zurücksetzen</h2>
+      <div class="sub" data-i="resetSub">Löscht alle Artikel und Bewegungen und legt die Demo-Daten neu an.</div>
+      <div class="row-actions">
+        <button class="btn danger" onclick="confirmReset()">🗑️ <span data-i="resetBtn">Alle Daten zurücksetzen</span></button>
+      </div>
+      <div class="divider"></div>
+      <div class="hint" data-i="dataFoot">Alle Daten liegen ausschließlich lokal in diesem Browser (IndexedDB). Keine personenbezogenen Daten, keine Server-Verbindung.</div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="app">
+  Perfect Skin Fashion · internes Warenwirtschaftssystem · <span data-i="offline">offline · lokal</span> · IndexedDB
+</footer>
+
+<!-- Article modal -->
+<div class="modal-back" id="art-modal-back">
+  <div class="modal">
+    <h3 id="art-modal-title" data-i="newArticle">Neuer Artikel</h3>
+    <div class="sub" data-i="artModalSub">Pflichtfelder: SKU und Name. Preise in Euro.</div>
+    <input type="hidden" id="art-id">
+    <div class="grid">
+      <label class="fld"><span class="lb" data-i="fSku">SKU / Barcode *</span><input id="af-sku" autocomplete="off"></label>
+      <label class="fld"><span class="lb" data-i="fEmoji">Symbol/Kürzel</span><input id="af-emoji" maxlength="3" placeholder="👗" autocomplete="off"></label>
+    </div>
+    <label class="fld"><span class="lb" data-i="fName">Name *</span><input id="af-name" autocomplete="off"></label>
+    <div class="grid">
+      <label class="fld"><span class="lb" data-i="fCat">Kategorie</span>
+        <select id="af-cat">
+          <option>Damen</option><option>Herren</option><option>Accessoires</option><option>Eigen-Design</option>
+        </select></label>
+      <label class="fld"><span class="lb" data-i="fSize">Größe</span><input id="af-size" placeholder="S / M / L / 38…" autocomplete="off"></label>
+      <label class="fld"><span class="lb" data-i="fColor">Farbe</span><input id="af-color" autocomplete="off"></label>
+    </div>
+    <div class="grid">
+      <label class="fld"><span class="lb" data-i="fEk">EK (€)</span><input id="af-ek" type="number" step="0.01" min="0" inputmode="decimal"></label>
+      <label class="fld"><span class="lb" data-i="fVk">VK (€)</span><input id="af-vk" type="number" step="0.01" min="0" inputmode="decimal"></label>
+      <label class="fld"><span class="lb" data-i="fSupplier">Lieferant</span><input id="af-supplier" autocomplete="off"></label>
+    </div>
+    <div class="grid">
+      <label class="fld"><span class="lb" data-i="fMin">Mindestbestand</span><input id="af-min" type="number" min="0" value="3" inputmode="numeric"></label>
+      <label class="fld"><span class="lb" data-i="fStock">Bestand</span><input id="af-stock" type="number" min="0" value="0" inputmode="numeric"></label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeModal('art-modal-back')" data-i="cancel">Abbrechen</button>
+      <button class="btn primary" onclick="saveArticle()" data-i="save">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm modal -->
+<div class="modal-back" id="confirm-back">
+  <div class="modal" style="width:min(440px,96vw)">
+    <h3 id="confirm-title">—</h3>
+    <div class="sub" id="confirm-msg">—</div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeModal('confirm-back')" data-i="cancel">Abbrechen</button>
+      <button class="btn danger" id="confirm-ok" data-i="ok">OK</button>
+    </div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+
+<script>
+"use strict";
+/* ============================================================
+   i18n
+   ============================================================ */
+const I18N = {
+  de:{
+    brandTitle:"PSF · Warenwirtschaft", probe:"Probephase", toShop:"← zum Shop",
+    tabDash:"Dashboard", tabIn:"Wareneingang", tabOut:"Warenausgang", tabArticles:"Artikel", tabJournal:"Journal", tabData:"Daten",
+    mArticles:"Artikel", uSku:"verschiedene SKU", mUnits:"Stückzahl", uOnStock:"auf Lager",
+    mValueVk:"Warenwert (VK)", mLow:"Unter Mindest", uReorder:"nachbestellen",
+    quickTitle:"Schnellzugriff", quickSub:"Direkt buchen — per Scan oder manuell.", newArticle:"Neuer Artikel",
+    lowTitle:"Nachbestell-Liste", lowSub:"Artikel auf oder unter Mindestbestand.",
+    recentTitle:"Letzte Bewegungen",
+    inTitle:"Wareneingang buchen", inSub:"Italien-Einkauf & Eigen-Design einbuchen. Scan oder manuelle Eingabe.",
+    outTitle:"Warenausgang buchen", outSub:"Verkauf, Retoure, Korrektur oder Schwund abbuchen.",
+    camHint:"Kamera aus. Auf „Scanner starten\" tippen, um einen Barcode zu erfassen.",
+    startScan:"Scanner starten", stopScan:"Scanner stoppen",
+    scanHint:"Nutzt die native BarcodeDetector-API des Geräts. Nicht verfügbar? Code einfach unten eintippen.",
+    fSku:"SKU / Barcode", fQty:"Menge", fNote:"Notiz (optional)", fReason:"Grund",
+    bookIn:"Eingang buchen", bookOut:"Ausgang buchen", check:"Prüfen",
+    rSale:"Verkauf", rReturn:"Retoure", rFix:"Korrektur", rLoss:"Schwund",
+    articlesTitle:"Artikelstammdaten", articlesSub:"Alle Artikel anlegen, bearbeiten, löschen. Bestand farblich markiert.",
+    allCats:"Alle Kategorien", allTypes:"Alle Typen",
+    journalTitle:"Bewegungs-Journal", journalSub:"Chronologische Liste aller Ein- und Ausgänge.",
+    dataTitle:"Import / Export & Sicherung", dataSub:"Gesamte Datenbank sichern, wiederherstellen oder als CSV exportieren.",
+    expJson:"DB-Sicherung (JSON)", expCsv:"Bestand (CSV)", impJson:"Sicherung einlesen",
+    resetTitle:"Zurücksetzen", resetSub:"Löscht alle Artikel und Bewegungen und legt die Demo-Daten neu an.",
+    resetBtn:"Alle Daten zurücksetzen",
+    dataFoot:"Alle Daten liegen ausschließlich lokal in diesem Browser (IndexedDB). Keine personenbezogenen Daten, keine Server-Verbindung.",
+    offline:"offline · lokal",
+    artModalSub:"Pflichtfelder: SKU und Name. Preise in Euro.",
+    fEmoji:"Symbol/Kürzel", fName:"Name *", fCat:"Kategorie", fSize:"Größe", fColor:"Farbe",
+    fEk:"EK (€)", fVk:"VK (€)", fSupplier:"Lieferant", fMin:"Mindestbestand", fStock:"Bestand",
+    cancel:"Abbrechen", save:"Speichern", ok:"OK",
+    // dynamic
+    colEmoji:"", colSku:"SKU", colName:"Name", colCat:"Kategorie", colSize:"Größe", colColor:"Farbe",
+    colEk:"EK", colVk:"VK", colStock:"Bestand", colMin:"Min", colSupplier:"Lieferant", colActions:"",
+    colTime:"Zeit", colType:"Typ", colQty:"Menge", colReason:"Grund",
+    tArts:"Artikel", tValueTotal:"Bestandswert",
+    emptyArts:"Noch keine Artikel. Lege den ersten an.", emptyJournal:"Noch keine Bewegungen.",
+    emptyLow:"Alles gut — kein Artikel unter Mindestbestand. 🎉",
+    noRecent:"Noch keine Bewegungen erfasst.",
+    skuFound:"Gefunden:", skuUnknown:"Unbekannte SKU — anlegen?", createNow:"Jetzt anlegen",
+    needSku:"Bitte SKU eingeben.", needQty:"Menge muss ≥ 1 sein.",
+    bookedIn:"Eingang gebucht:", bookedOut:"Ausgang gebucht:", newStock:"neuer Bestand",
+    notEnough:"Nicht genug Bestand — max.", saved:"Gespeichert.", deleted:"Artikel gelöscht.",
+    skuExists:"Diese SKU existiert bereits.", needNameSku:"SKU und Name sind Pflicht.",
+    resetDone:"Zurückgesetzt — Demo-Daten neu angelegt.", imported:"Import erfolgreich:",
+    importFail:"Import fehlgeschlagen — ungültige Datei.", exported:"Export gestartet.",
+    scanNoSupport:"Scanner nicht verfügbar — bitte Code manuell eingeben.",
+    scanNoCam:"Kein Kamerazugriff — bitte Code manuell eingeben.",
+    scanning:"Scanne… Barcode ins Feld halten.", scanned:"Erfasst:", scanStopped:"Scanner gestoppt.",
+    delArticle:"Artikel löschen?", delMsg:"„%s\" wird dauerhaft entfernt. Bewegungen bleiben im Journal.",
+    resetConfirm:"Wirklich alles zurücksetzen?", resetConfirmMsg:"Alle Artikel und Bewegungen werden gelöscht und die Demo-Daten neu angelegt.",
+    demo:"DEMO", units:"Stk", low:"niedrig"
+  },
+  en:{
+    brandTitle:"PSF · Inventory", probe:"Trial phase", toShop:"← to shop",
+    tabDash:"Dashboard", tabIn:"Goods in", tabOut:"Goods out", tabArticles:"Items", tabJournal:"Journal", tabData:"Data",
+    mArticles:"Items", uSku:"distinct SKUs", mUnits:"Units", uOnStock:"in stock",
+    mValueVk:"Stock value (RRP)", mLow:"Below min", uReorder:"reorder",
+    quickTitle:"Quick actions", quickSub:"Book directly — by scan or manual entry.", newArticle:"New item",
+    lowTitle:"Reorder list", lowSub:"Items at or below minimum stock.",
+    recentTitle:"Recent movements",
+    inTitle:"Book goods in", inSub:"Book Italy purchases & own designs. Scan or manual entry.",
+    outTitle:"Book goods out", outSub:"Book sale, return, correction or shrinkage.",
+    camHint:"Camera off. Tap “Start scanner” to capture a barcode.",
+    startScan:"Start scanner", stopScan:"Stop scanner",
+    scanHint:"Uses the device's native BarcodeDetector API. Not available? Just type the code below.",
+    fSku:"SKU / barcode", fQty:"Quantity", fNote:"Note (optional)", fReason:"Reason",
+    bookIn:"Book in", bookOut:"Book out", check:"Check",
+    rSale:"Sale", rReturn:"Return", rFix:"Correction", rLoss:"Shrinkage",
+    articlesTitle:"Item master data", articlesSub:"Create, edit, delete items. Stock colour-coded.",
+    allCats:"All categories", allTypes:"All types",
+    journalTitle:"Movement journal", journalSub:"Chronological list of all in/out movements.",
+    dataTitle:"Import / export & backup", dataSub:"Back up, restore the whole database or export CSV.",
+    expJson:"DB backup (JSON)", expCsv:"Stock (CSV)", impJson:"Restore backup",
+    resetTitle:"Reset", resetSub:"Deletes all items and movements and recreates the demo data.",
+    resetBtn:"Reset all data",
+    dataFoot:"All data stays local in this browser (IndexedDB). No personal data, no server.",
+    offline:"offline · local",
+    artModalSub:"Required: SKU and name. Prices in euro.",
+    fEmoji:"Symbol", fName:"Name *", fCat:"Category", fSize:"Size", fColor:"Colour",
+    fEk:"Cost (€)", fVk:"RRP (€)", fSupplier:"Supplier", fMin:"Min stock", fStock:"Stock",
+    cancel:"Cancel", save:"Save", ok:"OK",
+    colEmoji:"", colSku:"SKU", colName:"Name", colCat:"Category", colSize:"Size", colColor:"Colour",
+    colEk:"Cost", colVk:"RRP", colStock:"Stock", colMin:"Min", colSupplier:"Supplier", colActions:"",
+    colTime:"Time", colType:"Type", colQty:"Qty", colReason:"Reason",
+    tArts:"items", tValueTotal:"Stock value",
+    emptyArts:"No items yet. Create the first one.", emptyJournal:"No movements yet.",
+    emptyLow:"All good — no item below minimum. 🎉",
+    noRecent:"No movements recorded yet.",
+    skuFound:"Found:", skuUnknown:"Unknown SKU — create it?", createNow:"Create now",
+    needSku:"Please enter a SKU.", needQty:"Quantity must be ≥ 1.",
+    bookedIn:"Booked in:", bookedOut:"Booked out:", newStock:"new stock",
+    notEnough:"Not enough stock — max.", saved:"Saved.", deleted:"Item deleted.",
+    skuExists:"This SKU already exists.", needNameSku:"SKU and name are required.",
+    resetDone:"Reset — demo data recreated.", imported:"Import successful:",
+    importFail:"Import failed — invalid file.", exported:"Export started.",
+    scanNoSupport:"Scanner not available — please enter the code manually.",
+    scanNoCam:"No camera access — please enter the code manually.",
+    scanning:"Scanning… hold the barcode in view.", scanned:"Captured:", scanStopped:"Scanner stopped.",
+    delArticle:"Delete item?", delMsg:"“%s” will be removed permanently. Movements stay in the journal.",
+    resetConfirm:"Really reset everything?", resetConfirmMsg:"All items and movements will be deleted and the demo data recreated.",
+    demo:"DEMO", units:"pcs", low:"low"
+  }
+};
+let LANG = localStorage.getItem('psf_wws_lang') || 'de';
+function t(k){ return (I18N[LANG] && I18N[LANG][k]!=null) ? I18N[LANG][k] : (I18N.de[k]||k); }
+
+function applyI18n(){
+  document.documentElement.lang = LANG;
+  document.querySelectorAll('[data-i]').forEach(el=>{
+    const k = el.getAttribute('data-i');
+    if(I18N[LANG][k]!=null) el.textContent = I18N[LANG][k];
+  });
+  document.querySelectorAll('#langSwitch button').forEach(b=>b.classList.toggle('on', b.dataset.lang===LANG));
+  // placeholders
+  const ph = {
+    'art-search': LANG==='de'?'🔍 Suche: Name, SKU, Farbe, Lieferant…':'🔍 Search: name, SKU, colour, supplier…',
+    'jrn-search': LANG==='de'?'🔍 Suche: SKU, Name, Grund…':'🔍 Search: SKU, name, reason…'
+  };
+  Object.entries(ph).forEach(([id,v])=>{const e=document.getElementById(id); if(e) e.placeholder=v;});
+  renderAll();
+}
+
+/* ============================================================
+   IndexedDB
+   ============================================================ */
+const DB_NAME='psf_warehouse', DB_VER=1;
+let db=null;
+function openDB(){
+  return new Promise((res,rej)=>{
+    const r=indexedDB.open(DB_NAME,DB_VER);
+    r.onupgradeneeded=e=>{
+      const d=e.target.result;
+      if(!d.objectStoreNames.contains('articles')){
+        const s=d.createObjectStore('articles',{keyPath:'id',autoIncrement:true});
+        s.createIndex('sku','sku',{unique:true});
+      }
+      if(!d.objectStoreNames.contains('movements')){
+        const m=d.createObjectStore('movements',{keyPath:'id',autoIncrement:true});
+        m.createIndex('ts','ts');
+      }
+      if(!d.objectStoreNames.contains('meta')){
+        d.createObjectStore('meta',{keyPath:'k'});
+      }
+    };
+    r.onsuccess=e=>{db=e.target.result;res(db);};
+    r.onerror=e=>rej(e.target.error);
+  });
+}
+function tx(store,mode){ return db.transaction(store,mode).objectStore(store); }
+function idbAll(store){
+  return new Promise((res,rej)=>{const r=tx(store,'readonly').getAll();r.onsuccess=()=>res(r.result||[]);r.onerror=()=>rej(r.error);});
+}
+function idbGet(store,key){
+  return new Promise((res,rej)=>{const r=tx(store,'readonly').get(key);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});
+}
+function idbPut(store,val){
+  return new Promise((res,rej)=>{const r=tx(store,'readwrite').put(val);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});
+}
+function idbAdd(store,val){
+  return new Promise((res,rej)=>{const r=tx(store,'readwrite').add(val);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});
+}
+function idbDel(store,key){
+  return new Promise((res,rej)=>{const r=tx(store,'readwrite').delete(key);r.onsuccess=()=>res();r.onerror=()=>rej(r.error);});
+}
+function idbClear(store){
+  return new Promise((res,rej)=>{const r=tx(store,'readwrite').clear();r.onsuccess=()=>res();r.onerror=()=>rej(r.error);});
+}
+
+/* In-memory caches for rendering */
+let ARTICLES=[], MOVEMENTS=[];
+async function refreshCaches(){
+  ARTICLES = await idbAll('articles');
+  MOVEMENTS = await idbAll('movements');
+  ARTICLES.sort((a,b)=>a.name.localeCompare(b.name));
+  MOVEMENTS.sort((a,b)=>b.ts-a.ts);
+}
+function articleBySku(sku){
+  const s=(sku||'').trim().toLowerCase();
+  return ARTICLES.find(a=>a.sku.toLowerCase()===s);
+}
+
+/* ============================================================
+   Demo data (first run)
+   ============================================================ */
+const DEMO_ARTICLES=[
+  {sku:'PSF-1001',name:'Oversize Blazer Milano',cat:'Damen',size:'M',color:'Camel',ek:34.00,vk:129.00,supplier:'Atelier Milano',min:3,stock:7,emoji:'🧥',demo:true},
+  {sku:'PSF-1002',name:'Cargo Wide Pants',cat:'Herren',size:'L',color:'Olive',ek:22.50,vk:89.00,supplier:'Torino Denim',min:4,stock:2,emoji:'👖',demo:true},
+  {sku:'PSF-1003',name:'Rippstrick-Top',cat:'Damen',size:'S',color:'Ecru',ek:9.90,vk:39.90,supplier:'Firenze Knit',min:6,stock:14,emoji:'👚',demo:true},
+  {sku:'PSF-1004',name:'Ledergürtel Toscana',cat:'Accessoires',size:'95',color:'Cognac',ek:7.00,vk:34.90,supplier:'Pelle Toscana',min:5,stock:5,emoji:'🪢',demo:true},
+  {sku:'PSF-1005',name:'Seidenschal Como',cat:'Accessoires',size:'—',color:'Coral',ek:6.50,vk:29.90,supplier:'Seta Como',min:8,stock:3,emoji:'🧣',demo:true},
+  {sku:'PSF-2001',name:'PSF Signature Hoodie',cat:'Eigen-Design',size:'M',color:'Anthrazit',ek:15.00,vk:79.00,supplier:'PSF Eigenproduktion',min:5,stock:11,emoji:'🩳',demo:true},
+  {sku:'PSF-2002',name:'PSF Statement Tee',cat:'Eigen-Design',size:'L',color:'Weiß',ek:6.00,vk:34.90,supplier:'PSF Eigenproduktion',min:10,stock:22,emoji:'👕',demo:true}
+];
+async function seedIfEmpty(){
+  const seeded = await idbGet('meta','seeded');
+  const arts = await idbAll('articles');
+  if(!seeded && arts.length===0){
+    for(const a of DEMO_ARTICLES){ await idbAdd('articles', {...a}); }
+    await idbPut('meta',{k:'seeded',v:true});
+  }
+}
+
+/* ============================================================
+   UI helpers
+   ============================================================ */
+function eur(n){ return (Number(n)||0).toLocaleString(LANG==='de'?'de-DE':'en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+' €'; }
+function num(n){ return (Number(n)||0).toLocaleString(LANG==='de'?'de-DE':'en-US'); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function fmtTime(ts){
+  const d=new Date(ts);
+  const p=x=>String(x).padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+function toast(msg,type){
+  const el=document.createElement('div');
+  el.className='toast '+(type||'');
+  const ic={ok:'✅',warn:'⚠️',err:'⛔'}[type]||'ℹ️';
+  el.innerHTML=`<span>${ic}</span><span>${esc(msg)}</span>`;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(()=>{el.style.transition='opacity .3s';el.style.opacity='0';setTimeout(()=>el.remove(),300);}, 3200);
+}
+function closeModal(id){ document.getElementById(id).classList.remove('on'); }
+
+/* ============================================================
+   Navigation
+   ============================================================ */
+function go(tab){
+  document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('on', b.dataset.tab===tab));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.getElementById('panel-'+tab).classList.add('on');
+  // stop any camera when leaving in/out
+  if(tab!=='in') stopScan('in',true);
+  if(tab!=='out') stopScan('out',true);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.getElementById('tabs').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(b) go(b.dataset.tab);
+});
+
+/* ============================================================
+   Rendering
+   ============================================================ */
+function renderAll(){ renderDashboard(); renderArticles(); renderJournal(); }
+
+function renderDashboard(){
+  const nArt=ARTICLES.length;
+  const units=ARTICLES.reduce((s,a)=>s+(+a.stock||0),0);
+  const valVk=ARTICLES.reduce((s,a)=>s+(+a.stock||0)*(+a.vk||0),0);
+  const valEk=ARTICLES.reduce((s,a)=>s+(+a.stock||0)*(+a.ek||0),0);
+  const low=ARTICLES.filter(a=>(+a.stock||0)<=(+a.min||0));
+  document.getElementById('stat-articles').textContent=num(nArt);
+  document.getElementById('stat-units').textContent=num(units);
+  document.getElementById('stat-valuevk').textContent=eur(valVk);
+  document.getElementById('stat-valueek').textContent='EK '+eur(valEk);
+  document.getElementById('stat-low').textContent=num(low.length);
+
+  // low list
+  const lowEl=document.getElementById('low-list');
+  if(low.length===0){ lowEl.innerHTML=`<div class="empty">${esc(t('emptyLow'))}</div>`; }
+  else{
+    low.sort((a,b)=>(a.stock-a.min)-(b.stock-b.min));
+    lowEl.innerHTML=`<div class="table-wrap"><table>
+      <thead><tr><th></th><th>${t('colSku')}</th><th>${t('colName')}</th><th class="right">${t('colStock')}</th><th class="right">${t('colMin')}</th><th>${t('colSupplier')}</th></tr></thead>
+      <tbody>${low.map(a=>`<tr class="low">
+        <td class="emoji-cell">${esc(a.emoji||'📦')}</td>
+        <td class="mono">${esc(a.sku)}</td>
+        <td>${esc(a.name)}</td>
+        <td class="right mono"><span class="pill low">${a.stock}</span></td>
+        <td class="right mono">${a.min}</td>
+        <td>${esc(a.supplier||'—')}</td></tr>`).join('')}</tbody></table></div>`;
+  }
+
+  // recent
+  const rEl=document.getElementById('recent-list');
+  const recent=MOVEMENTS.slice(0,8);
+  if(recent.length===0){ rEl.innerHTML=`<div class="empty">${esc(t('noRecent'))}</div>`; }
+  else{
+    rEl.innerHTML=`<div class="table-wrap"><table>
+      <thead><tr><th>${t('colTime')}</th><th>${t('colType')}</th><th>${t('colSku')}</th><th>${t('colName')}</th><th class="right">${t('colQty')}</th><th>${t('colReason')}</th></tr></thead>
+      <tbody>${recent.map(m=>movRow(m)).join('')}</tbody></table></div>`;
+  }
+}
+
+function movRow(m){
+  const isIn=m.type==='in';
+  const sign=isIn?'+':'−';
+  const label=isIn?t('tabIn'):t('tabOut');
+  return `<tr>
+    <td class="mono" style="white-space:nowrap">${fmtTime(m.ts)}</td>
+    <td><span class="pill ${isIn?'in':'out'}">${esc(label)}</span></td>
+    <td class="mono">${esc(m.sku)}</td>
+    <td>${esc(m.name)}</td>
+    <td class="right mono">${sign}${m.qty}</td>
+    <td>${esc(m.reason||'—')}</td></tr>`;
+}
+
+function renderArticles(){
+  const q=(document.getElementById('art-search').value||'').trim().toLowerCase();
+  const cat=document.getElementById('art-filter').value;
+  let list=ARTICLES.filter(a=>{
+    if(cat && a.cat!==cat) return false;
+    if(!q) return true;
+    return [a.sku,a.name,a.color,a.supplier,a.size,a.cat].some(x=>String(x||'').toLowerCase().includes(q));
+  });
+  const el=document.getElementById('articles-table');
+  const totVk=list.reduce((s,a)=>s+(+a.stock||0)*(+a.vk||0),0);
+  document.getElementById('art-total').textContent=`${list.length} ${t('tArts')} · ${t('tValueTotal')}: ${eur(totVk)}`;
+  if(list.length===0){ el.innerHTML=`<div class="empty"><div class="big">👗</div>${esc(t('emptyArts'))}</div>`; return; }
+  el.innerHTML=`<div class="table-wrap"><table>
+    <thead><tr>
+      <th></th><th>${t('colSku')}</th><th>${t('colName')}</th><th>${t('colCat')}</th>
+      <th>${t('colSize')}</th><th>${t('colColor')}</th>
+      <th class="right">${t('colEk')}</th><th class="right">${t('colVk')}</th>
+      <th class="right">${t('colStock')}</th><th class="right">${t('colMin')}</th>
+      <th>${t('colSupplier')}</th><th></th>
+    </tr></thead>
+    <tbody>${list.map(a=>{
+      const lowFlag=(+a.stock||0)<=(+a.min||0);
+      return `<tr class="${lowFlag?'low':''}">
+        <td class="emoji-cell">${esc(a.emoji||'📦')}</td>
+        <td class="mono">${esc(a.sku)}${a.demo?` <span class="pill demo">${t('demo')}</span>`:''}</td>
+        <td>${esc(a.name)}</td>
+        <td><span class="pill cat">${esc(a.cat||'—')}</span></td>
+        <td>${esc(a.size||'—')}</td>
+        <td>${esc(a.color||'—')}</td>
+        <td class="right mono">${eur(a.ek)}</td>
+        <td class="right mono">${eur(a.vk)}</td>
+        <td class="right mono">${lowFlag?`<span class="pill low">${a.stock}</span>`:a.stock}</td>
+        <td class="right mono">${a.min}</td>
+        <td>${esc(a.supplier||'—')}</td>
+        <td><div class="tbl-actions">
+          <button class="icon-btn" title="Edit" onclick="openArticleDialog(${a.id})">✏️</button>
+          <button class="icon-btn del" title="Delete" onclick="askDeleteArticle(${a.id})">🗑️</button>
+        </div></td></tr>`;
+    }).join('')}</tbody></table></div>`;
+}
+
+function renderJournal(){
+  const q=(document.getElementById('jrn-search').value||'').trim().toLowerCase();
+  const ft=document.getElementById('jrn-filter').value;
+  let list=MOVEMENTS.filter(m=>{
+    if(ft && m.type!==ft) return false;
+    if(!q) return true;
+    return [m.sku,m.name,m.reason].some(x=>String(x||'').toLowerCase().includes(q));
+  });
+  const el=document.getElementById('journal-table');
+  if(list.length===0){ el.innerHTML=`<div class="empty"><div class="big">📜</div>${esc(t('emptyJournal'))}</div>`; return; }
+  el.innerHTML=`<div class="table-wrap"><table>
+    <thead><tr><th>${t('colTime')}</th><th>${t('colType')}</th><th>${t('colSku')}</th><th>${t('colName')}</th><th class="right">${t('colQty')}</th><th>${t('colReason')}</th></tr></thead>
+    <tbody>${list.map(m=>movRow(m)).join('')}</tbody></table></div>`;
+}
+
+/* ============================================================
+   SKU lookup / booking
+   ============================================================ */
+function lookupSku(dir){
+  const sku=document.getElementById(dir+'-sku').value.trim();
+  const foundEl=document.getElementById(dir+'-found');
+  if(!sku){ foundEl.innerHTML=''; return null; }
+  const a=articleBySku(sku);
+  if(a){
+    foundEl.innerHTML=`<span style="color:var(--ok)">✔ ${t('skuFound')} ${esc(a.emoji||'📦')} ${esc(a.name)} · ${t('colStock')}: <b>${a.stock}</b></span>`;
+    return a;
+  } else {
+    foundEl.innerHTML=`<span style="color:var(--warn)">⚠ ${t('skuUnknown')}</span> <button class="btn ghost sm" onclick="openArticleDialog(null,'${esc(sku).replace(/'/g,"")}')">${t('createNow')}</button>`;
+    return null;
+  }
+}
+// live lookup on typing
+['in','out'].forEach(dir=>{
+  document.getElementById(dir+'-sku').addEventListener('input',()=>lookupSku(dir));
+});
+
+async function bookMovement(dir){
+  const skuEl=document.getElementById(dir+'-sku');
+  const qtyEl=document.getElementById(dir+'-qty');
+  const sku=skuEl.value.trim();
+  const qty=parseInt(qtyEl.value,10);
+  if(!sku){ toast(t('needSku'),'warn'); skuEl.focus(); return; }
+  if(!(qty>=1)){ toast(t('needQty'),'warn'); qtyEl.focus(); return; }
+  const a=articleBySku(sku);
+  if(!a){
+    toast(t('skuUnknown'),'warn');
+    openArticleDialog(null, sku);
+    return;
+  }
+  if(dir==='out' && qty>(+a.stock||0)){
+    toast(`${t('notEnough')} ${a.stock}`,'err');
+    return;
+  }
+  const newStock=(+a.stock||0)+(dir==='in'?qty:-qty);
+  a.stock=newStock;
+  await idbPut('articles',a);
+  const reason = dir==='in'
+      ? (document.getElementById('in-note').value.trim()||'')
+      : document.getElementById('out-reason').value;
+  await idbAdd('movements',{type:dir,sku:a.sku,name:a.name,qty,reason,ts:Date.now()});
+  await refreshCaches();
+  renderAll();
+  toast(`${dir==='in'?t('bookedIn'):t('bookedOut')} ${qty}× ${a.name} · ${t('newStock')}: ${newStock}`,'ok');
+  // reset inputs
+  skuEl.value=''; qtyEl.value='1';
+  document.getElementById(dir+'-found').innerHTML='';
+  if(dir==='in') document.getElementById('in-note').value='';
+  skuEl.focus();
+}
+
+/* ============================================================
+   Article CRUD
+   ============================================================ */
+function openArticleDialog(id, prefillSku){
+  const back=document.getElementById('art-modal-back');
+  document.getElementById('art-id').value = id||'';
+  const set=(k,v)=>document.getElementById(k).value=(v==null?'':v);
+  if(id){
+    const a=ARTICLES.find(x=>x.id===id);
+    document.getElementById('art-modal-title').textContent = LANG==='de'?'Artikel bearbeiten':'Edit item';
+    set('af-sku',a.sku); set('af-emoji',a.emoji); set('af-name',a.name);
+    document.getElementById('af-cat').value=a.cat||'Damen';
+    set('af-size',a.size); set('af-color',a.color);
+    set('af-ek',a.ek); set('af-vk',a.vk); set('af-supplier',a.supplier);
+    set('af-min',a.min); set('af-stock',a.stock);
+  } else {
+    document.getElementById('art-modal-title').textContent=t('newArticle');
+    ['af-sku','af-emoji','af-name','af-size','af-color','af-ek','af-vk','af-supplier'].forEach(k=>set(k,''));
+    document.getElementById('af-cat').value='Damen';
+    set('af-min',3); set('af-stock',0);
+    if(prefillSku) set('af-sku',prefillSku);
+  }
+  // ensure other modals closed
+  closeModal('confirm-back');
+  back.classList.add('on');
+  setTimeout(()=>document.getElementById(id?'af-name':'af-sku').focus(),50);
+}
+
+async function saveArticle(){
+  const id=document.getElementById('art-id').value;
+  const sku=document.getElementById('af-sku').value.trim();
+  const name=document.getElementById('af-name').value.trim();
+  if(!sku || !name){ toast(t('needNameSku'),'warn'); return; }
+  // unique SKU check
+  const dup=articleBySku(sku);
+  if(dup && String(dup.id)!==String(id)){ toast(t('skuExists'),'err'); return; }
+  const rec={
+    sku, name,
+    emoji:document.getElementById('af-emoji').value.trim(),
+    cat:document.getElementById('af-cat').value,
+    size:document.getElementById('af-size').value.trim(),
+    color:document.getElementById('af-color').value.trim(),
+    ek:parseFloat(document.getElementById('af-ek').value)||0,
+    vk:parseFloat(document.getElementById('af-vk').value)||0,
+    supplier:document.getElementById('af-supplier').value.trim(),
+    min:parseInt(document.getElementById('af-min').value,10)||0,
+    stock:parseInt(document.getElementById('af-stock').value,10)||0,
+    demo:false
+  };
+  if(id){
+    const existing=ARTICLES.find(x=>x.id===+id);
+    rec.id=+id;
+    rec.demo=existing?existing.demo:false; // keep demo flag on edit
+    await idbPut('articles',rec);
+  } else {
+    await idbAdd('articles',rec);
+  }
+  await refreshCaches();
+  renderAll();
+  closeModal('art-modal-back');
+  toast(t('saved'),'ok');
+}
+
+let _delId=null;
+function askDeleteArticle(id){
+  const a=ARTICLES.find(x=>x.id===id); if(!a) return;
+  _delId=id;
+  document.getElementById('confirm-title').textContent=t('delArticle');
+  document.getElementById('confirm-msg').textContent=t('delMsg').replace('%s',a.name);
+  const ok=document.getElementById('confirm-ok');
+  ok.textContent = LANG==='de'?'Löschen':'Delete';
+  ok.onclick=async()=>{
+    await idbDel('articles',_delId);
+    await refreshCaches(); renderAll();
+    closeModal('confirm-back');
+    toast(t('deleted'),'ok');
+  };
+  document.getElementById('confirm-back').classList.add('on');
+}
+
+/* ============================================================
+   Reset
+   ============================================================ */
+function confirmReset(){
+  document.getElementById('confirm-title').textContent=t('resetConfirm');
+  document.getElementById('confirm-msg').textContent=t('resetConfirmMsg');
+  const ok=document.getElementById('confirm-ok');
+  ok.textContent = LANG==='de'?'Zurücksetzen':'Reset';
+  ok.onclick=async()=>{
+    await idbClear('articles'); await idbClear('movements');
+    await idbPut('meta',{k:'seeded',v:false});
+    for(const a of DEMO_ARTICLES){ await idbAdd('articles',{...a}); }
+    await idbPut('meta',{k:'seeded',v:true});
+    await refreshCaches(); renderAll();
+    closeModal('confirm-back');
+    toast(t('resetDone'),'ok');
+  };
+  document.getElementById('confirm-back').classList.add('on');
+}
+
+/* ============================================================
+   Import / Export
+   ============================================================ */
+function download(filename, text, mime){
+  const blob=new Blob([text],{type:mime||'application/octet-stream'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function exportJSON(){
+  const stamp=new Date().toISOString().slice(0,10);
+  const payload={app:'PSF-Warenwirtschaft',version:1,exported:new Date().toISOString(),
+    articles:ARTICLES, movements:MOVEMENTS};
+  download(`psf-wws-backup-${stamp}.json`, JSON.stringify(payload,null,2),'application/json');
+  toast(t('exported'),'ok');
+}
+function exportCSV(){
+  const stamp=new Date().toISOString().slice(0,10);
+  const head=['SKU','Name','Kategorie','Groesse','Farbe','EK','VK','Bestand','Mindestbestand','Lieferant'];
+  const esc2=s=>{s=String(s==null?'':s); return /[",;\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;};
+  const rows=ARTICLES.map(a=>[a.sku,a.name,a.cat,a.size,a.color,(+a.ek||0).toFixed(2),(+a.vk||0).toFixed(2),a.stock,a.min,a.supplier].map(esc2).join(';'));
+  const csv='﻿'+head.join(';')+'\n'+rows.join('\n');
+  download(`psf-bestand-${stamp}.csv`, csv,'text/csv');
+  toast(t('exported'),'ok');
+}
+function importJSON(ev){
+  const file=ev.target.files&&ev.target.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=async()=>{
+    try{
+      const data=JSON.parse(reader.result);
+      if(!Array.isArray(data.articles)) throw new Error('no articles');
+      await idbClear('articles'); await idbClear('movements');
+      for(const a of data.articles){ const c={...a}; delete c.id; await idbAdd('articles',c); }
+      if(Array.isArray(data.movements)){ for(const m of data.movements){ const c={...m}; delete c.id; await idbAdd('movements',c); } }
+      await idbPut('meta',{k:'seeded',v:true});
+      await refreshCaches(); renderAll();
+      toast(`${t('imported')} ${data.articles.length} ${t('tArts')}`,'ok');
+    }catch(err){
+      toast(t('importFail'),'err');
+    }
+    ev.target.value='';
+  };
+  reader.readAsText(file);
+}
+
+/* ============================================================
+   Barcode scanning (native BarcodeDetector, fail-soft)
+   ============================================================ */
+const scanState={ in:{stream:null,detector:null,raf:null,running:false},
+                  out:{stream:null,detector:null,raf:null,running:false} };
+let _detectorSupported = ('BarcodeDetector' in window);
+
+async function toggleScan(dir){
+  if(scanState[dir].running){ stopScan(dir); return; }
+  await startScan(dir);
+}
+
+async function startScan(dir){
+  const stage=document.getElementById('cam-'+dir);
+  const video=document.getElementById('video-'+dir);
+  const det=document.getElementById('det-'+dir);
+  const btn=document.getElementById('scanbtn-'+dir);
+
+  if(!_detectorSupported){
+    toast(t('scanNoSupport'),'warn');
+    document.getElementById(dir+'-sku').focus();
+    return;
+  }
+  let stream;
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+  }catch(err){
+    toast(t('scanNoCam'),'warn');
+    document.getElementById(dir+'-sku').focus();
+    return;
+  }
+  let detector;
+  try{
+    let formats=['ean_13','ean_8','code_128','code_39','upc_a','upc_e','codabar','itf','qr_code'];
+    try{
+      const supported=await window.BarcodeDetector.getSupportedFormats();
+      formats=formats.filter(f=>supported.includes(f));
+      if(formats.length===0) formats=supported;
+    }catch(_){}
+    detector=new window.BarcodeDetector({formats});
+  }catch(err){
+    stream.getTracks().forEach(x=>x.stop());
+    _detectorSupported=false;
+    toast(t('scanNoSupport'),'warn');
+    return;
+  }
+  scanState[dir]={stream,detector,raf:null,running:true};
+  video.srcObject=stream;
+  await video.play().catch(()=>{});
+  stage.classList.add('live');
+  det.style.display='none';
+  btn.innerHTML='⏹️ <span>'+t('stopScan')+'</span>';
+  toast(t('scanning'),'ok');
+
+  const loop=async()=>{
+    const st=scanState[dir];
+    if(!st.running) return;
+    try{
+      if(video.readyState>=2){
+        const codes=await detector.detect(video);
+        if(codes && codes.length){
+          const val=(codes[0].rawValue||'').trim();
+          if(val){ onScanned(dir,val); return; }
+        }
+      }
+    }catch(_){/* transient detect errors ignored */}
+    st.raf=requestAnimationFrame(loop);
+  };
+  scanState[dir].raf=requestAnimationFrame(loop);
+}
+
+function onScanned(dir,val){
+  const det=document.getElementById('det-'+dir);
+  det.textContent=`${t('scanned')} ${val}`;
+  det.style.display='block';
+  const skuEl=document.getElementById(dir+'-sku');
+  skuEl.value=val;
+  lookupSku(dir);
+  toast(`${t('scanned')} ${val}`,'ok');
+  // haptic if available
+  if(navigator.vibrate) navigator.vibrate(60);
+  stopScan(dir);
+  document.getElementById(dir+'-qty').focus();
+}
+
+function stopScan(dir,silent){
+  const st=scanState[dir];
+  if(!st || !st.running){
+    // still ensure UI reset
+    const stage0=document.getElementById('cam-'+dir);
+    if(stage0) stage0.classList.remove('live');
+    return;
+  }
+  st.running=false;
+  if(st.raf) cancelAnimationFrame(st.raf);
+  if(st.stream) st.stream.getTracks().forEach(x=>x.stop());
+  const video=document.getElementById('video-'+dir);
+  if(video) video.srcObject=null;
+  const stage=document.getElementById('cam-'+dir);
+  if(stage) stage.classList.remove('live');
+  const btn=document.getElementById('scanbtn-'+dir);
+  if(btn) btn.innerHTML='📷 <span>'+t('startScan')+'</span>';
+  scanState[dir]={stream:null,detector:null,raf:null,running:false};
+  if(!silent) toast(t('scanStopped'),'');
+}
+
+/* ============================================================
+   Language switch + modal backdrop close + init
+   ============================================================ */
+document.getElementById('langSwitch').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  LANG=b.dataset.lang; localStorage.setItem('psf_wws_lang',LANG); applyI18n();
+});
+document.querySelectorAll('.modal-back').forEach(mb=>{
+  mb.addEventListener('click',e=>{ if(e.target===mb) mb.classList.remove('on'); });
+});
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') document.querySelectorAll('.modal-back.on').forEach(m=>m.classList.remove('on')); });
+// Enter in SKU field books (in/out)
+['in','out'].forEach(dir=>{
+  document.getElementById(dir+'-sku').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); document.getElementById(dir+'-qty').focus(); } });
+  document.getElementById(dir+'-qty').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); bookMovement(dir); } });
+});
+
+async function init(){
+  try{
+    await openDB();
+    await seedIfEmpty();
+    await refreshCaches();
+    applyI18n(); // also calls renderAll
+    if(!_detectorSupported){
+      // soft note in scan hints
+      document.querySelectorAll('[id^="scanbtn-"]').forEach(b=>b.title=t('scanNoSupport'));
+    }
+  }catch(err){
+    toast('DB-Fehler: '+err.message,'err');
+    console.error(err);
+  }
+}
+init();
+</script>
+</body>
+</html>

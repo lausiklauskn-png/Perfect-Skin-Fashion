@@ -1,0 +1,14 @@
+{
+  "name": "Perfect Skin Fashion",
+  "short_name": "PSF Fashion",
+  "description": "Junge, hochwertige Mode aus Italien — Hamburg. Limitiert & mit eigenem Design.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fbf9f6",
+  "theme_color": "#ff4d6d",
+  "lang": "de",
+  "icons": [
+    { "src": "assets/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
