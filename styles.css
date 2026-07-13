@@ -172,6 +172,10 @@ section{position:relative;z-index:1}
 .logo__mark{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;
   background:var(--grad);color:var(--accent-ink);font-family:var(--font-head);font-size:17px;
   box-shadow:var(--shadow-sm)}
+.logo__img{width:46px;height:46px;border-radius:12px;flex:none;object-fit:cover;
+  background:#f2ece4;box-shadow:var(--shadow-sm)}
+.intro__logo{width:clamp(96px,20vw,150px);height:auto;border-radius:22px;margin:0 auto 18px;
+  box-shadow:0 20px 50px -20px rgba(0,0,0,.4);display:block}
 .logo__title{font-family:var(--font-head);font-size:20px;color:var(--ink);line-height:1}
 .logo__sub{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);font-weight:700}
 .nav{display:flex;gap:22px;align-items:center}
