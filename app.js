@@ -269,6 +269,11 @@
   const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
   const money = (n) => new Intl.NumberFormat(lang === "en" ? "en-DE" : lang, { style: "currency", currency: "EUR" }).format(n);
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  /* Tolerante Zugriffe: veröffentlichte Artikel liefern Name als String und Farbe als Hex,
+     die eingebauten Demo-Produkte als {de,en,..}-Objekt bzw. Farb-Key. Beides muss laufen. */
+  const pname = (p) => (typeof p.name === "string" ? p.name : (p.name && (p.name[lang] || p.name.de)) || "");
+  const colHex = (c) => COLORS[c] || c;              // c ist ein Key ODER schon ein Hex
+  const colName = (c) => (cname[c] ? cname[c][lang] : c);
 
   /* Platzhalter-Kachel als HTML (bis echte Fotos da sind) */
   function placeholder(label, sub, colorHex) {
@@ -302,20 +307,21 @@
     const badge = p.badge ? `<span class="product__badge">${t("badge_" + p.badge)}</span>` : "";
     const isFav = favs.includes(p.id) ? " on" : "";
     const swat = p.colors.slice(0, 5).map((c, i) =>
-      `<span class="swatch${i === 0 ? " sel" : ""}" data-color="${c}" title="${cname[c] ? cname[c][lang] : c}" style="background:${COLORS[c]}"></span>`).join("");
+      `<span class="swatch${i === 0 ? " sel" : ""}" data-color="${c}" title="${esc(colName(c))}" style="background:${colHex(c)}"></span>`).join("");
     const price = p.old ? `<s>${money(p.old)}</s>${money(p.price)}` : money(p.price);
+    const media = p.img ? `<img src="${esc(p.img)}" alt="${esc(pname(p))}" loading="lazy">` : placeholder(pname(p), "PSF · Foto", colHex(c0));
     return `<article class="product" data-id="${p.id}" data-cat="${p.cat}">
       <div class="product__media">
         ${badge}
         <button class="product__fav${isFav}" data-fav="${p.id}" aria-label="favorite">
           <svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.6-9.2C.7 8.1 2.6 5 6 5c2 0 3.2 1.1 4 2 .8-.9 2-2 4-2 3.4 0 5.3 3.1 3.6 6.8C19.5 16.4 12 21 12 21z"/></svg>
         </button>
-        ${placeholder(p.name[lang], "PSF · Foto", COLORS[c0])}
+        ${media}
         <div class="product__quick"><button class="btn3d btn-sm" data-open="${p.id}" style="width:100%;justify-content:center">${t("quick")}</button></div>
       </div>
       <div class="product__body">
         <span class="product__cat">${catLabel(p.cat)}</span>
-        <h3 class="product__name">${esc(p.name[lang])}</h3>
+        <h3 class="product__name">${esc(pname(p))}</h3>
         <div class="swatches" data-swatches="${p.id}">${swat}</div>
         <div class="product__row"><span class="product__price">${price}</span></div>
       </div>
@@ -356,7 +362,7 @@
     const p = prod(modalState.id); if (!p) return;
     const m = $("#modal");
     const swat = p.colors.map((c) =>
-      `<span class="swatch${c === modalState.color ? " sel" : ""}" data-mcolor="${c}" title="${cname[c] ? cname[c][lang] : c}" style="background:${COLORS[c]}"></span>`).join("");
+      `<span class="swatch${c === modalState.color ? " sel" : ""}" data-mcolor="${c}" title="${esc(colName(c))}" style="background:${colHex(c)}"></span>`).join("");
     const sizes = p.sizes.map((s) => {
       const out = (p.out || []).includes(s);
       return `<button class="size${modalState.size === s ? " sel" : ""}${out ? " out" : ""}" ${out ? "disabled" : ""} data-msize="${s}">${s}</button>`;
@@ -364,12 +370,12 @@
     const price = p.old ? `<s style="color:var(--body);font-weight:400;font-size:16px;margin-right:8px">${money(p.old)}</s>${money(p.price)}` : money(p.price);
     m.querySelector(".modal__card").innerHTML = `
       <button class="modal__close" data-close-modal>&times;</button>
-      <div class="modal__media">${placeholder(p.name[lang], "PSF · " + (cname[modalState.color] ? cname[modalState.color][lang] : ""), COLORS[modalState.color])}</div>
+      <div class="modal__media">${p.img ? `<img src="${esc(p.img)}" alt="${esc(pname(p))}">` : placeholder(pname(p), "PSF · " + colName(modalState.color), colHex(modalState.color))}</div>
       <div class="modal__body">
         <span class="product__cat">${catLabel(p.cat)}</span>
-        <h2 class="modal__name">${esc(p.name[lang])}</h2>
+        <h2 class="modal__name">${esc(pname(p))}</h2>
         <div class="modal__price">${price}</div>
-        <div class="opt"><b>${t("pick_color")}: ${cname[modalState.color] ? cname[modalState.color][lang] : ""}</b><div class="swatches">${swat}</div></div>
+        <div class="opt"><b>${t("pick_color")}: ${esc(colName(modalState.color))}</b><div class="swatches">${swat}</div></div>
         <div class="opt"><b>${t("pick_size")}</b><div class="sizes">${sizes}</div></div>
         <button class="btn3d" data-addmodal style="width:100%;justify-content:center;margin-top:18px">${t("add_cart")}</button>
         ${p.cat === "design" ? `<a class="btn3d btn3d--ghost btn-sm" href="design-studio.html?p=${p.id}" style="width:100%;justify-content:center;margin-top:10px">${t("studio_cta")}</a>` : ""}
@@ -397,10 +403,10 @@
       body.innerHTML = cart.map((i) => {
         const p = prod(i.id);
         return `<div class="cart-item" data-key="${i.key}">
-          <div class="cart-item__img">${placeholder(p.name[lang].split(" ")[0], "", COLORS[i.color])}</div>
+          <div class="cart-item__img">${p.img ? `<img src="${esc(p.img)}" alt="" style="width:100%;height:100%;object-fit:cover">` : placeholder(pname(p).split(" ")[0], "", colHex(i.color))}</div>
           <div class="cart-item__info">
-            <b>${esc(p.name[lang])}</b>
-            <small>${cname[i.color] ? cname[i.color][lang] : i.color} · ${t("size_lbl")} ${i.size} · ${money(i.price)}</small>
+            <b>${esc(pname(p))}</b>
+            <small>${esc(colName(i.color))} · ${t("size_lbl")} ${i.size} · ${money(i.price)}</small>
             <div class="qty"><button data-dec="${i.key}">−</button><span>${i.qty}</span><button data-inc="${i.key}">+</button>
               <button class="cart-item__rm" data-rm="${i.key}">${t("remove")}</button></div>
           </div>
@@ -457,7 +463,7 @@
       if (sw) { const wrap = sw.closest(".product"); const c = sw.dataset.color;
         $$(".swatch", sw.parentElement).forEach((x) => x.classList.remove("sel")); sw.classList.add("sel");
         const ph = $(".product__media .ph span", wrap) ? $(".product__media .ph", wrap) : null;
-        if (ph) ph.style.background = `linear-gradient(150deg,${COLORS[c]},color-mix(in srgb,${COLORS[c]} 55%,#000 15%))`;
+        if (ph) ph.style.background = `linear-gradient(150deg,${colHex(c)},color-mix(in srgb,${colHex(c)} 55%,#000 15%))`;
         return; }
       // Modal-Farbe
       const mc = e.target.closest("[data-mcolor]");
@@ -503,9 +509,41 @@
     document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeModal(); closeCart(); if (mnav) mnav.classList.remove("on"); } });
   }
 
+  /* ---------------- VERÖFFENTLICHTE ARTIKEL (Lager → Shop) ----------------
+     Zwei Quellen, beide fail-soft:
+       1) localStorage['psf_products'] — von der Warenwirtschaft „veröffentlicht"
+          (gleicher Origin auf GitHub Pages → sofort auf demselben Gerät sichtbar).
+       2) products.json im Repo — dauerhaft, für ALLE Besucher (von Klaus committet).
+     Beide werden mit den eingebauten Demo-Produkten vereinigt (nach id, ohne Dubletten). */
+  function normalizePublished(it) {
+    if (!it || !it.id) return null;
+    return {
+      id: String(it.id), cat: it.cat || "women", price: +it.price || 0, old: it.old ? +it.old : undefined,
+      badge: it.badge || "new", name: it.name || it.id,
+      sizes: Array.isArray(it.sizes) && it.sizes.length ? it.sizes : ["Uni"],
+      colors: Array.isArray(it.colors) ? it.colors : [], out: Array.isArray(it.out) ? it.out : [],
+      img: it.img || undefined, published: true,
+    };
+  }
+  function mergePublished(arr) {
+    const ids = new Set(PRODUCTS.map((p) => p.id));
+    (arr || []).forEach((raw) => { const p = normalizePublished(raw); if (p && !ids.has(p.id)) { PRODUCTS.unshift(p); ids.add(p.id); } });
+  }
+  async function loadPublished() {
+    // 1) localStorage (sofort, gleiches Gerät)
+    try { const local = JSON.parse(localStorage.getItem("psf_products") || "null");
+      if (local) mergePublished(Array.isArray(local) ? local : local.products); } catch (e) { /* ignoriere kaputten Stand */ }
+    // 2) products.json (Repo, alle Besucher)
+    try { const r = await fetch("products.json", { cache: "no-store" });
+      if (r.ok) { const data = await r.json(); mergePublished(Array.isArray(data) ? data : data.products); } }
+    catch (e) { /* keine Datei / offline → nur Demo + localStorage */ }
+  }
+
   /* ---------------- INIT ---------------- */
-  function init() {
-    setTheme(theme); applyI18n(); renderGrid(); renderReels(); wire(); updateCartUI(); runIntro();
+  async function init() {
+    setTheme(theme); applyI18n(); renderReels(); wire(); updateCartUI(); runIntro();
+    await loadPublished();
+    renderGrid();
     // Deep-link ?p=<id> öffnet Produkt
     const q = new URLSearchParams(location.search).get("p");
     if (q && prod(q)) setTimeout(() => openModal(q), sessionStorage.getItem("psf_intro") ? 200 : 3400);
