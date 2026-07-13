@@ -370,7 +370,7 @@
     const price = p.old ? `<s style="color:var(--body);font-weight:400;font-size:16px;margin-right:8px">${money(p.old)}</s>${money(p.price)}` : money(p.price);
     m.querySelector(".modal__card").innerHTML = `
       <button class="modal__close" data-close-modal>&times;</button>
-      <div class="modal__media">${p.img ? `<img src="${esc(p.img)}" alt="${esc(pname(p))}">` : placeholder(pname(p), "PSF · " + colName(modalState.color), colHex(modalState.color))}</div>
+      <div class="modal__media">${p.img ? `<img src="${esc(p.img)}" alt="${esc(pname(p))}" data-lbimg="${esc(p.img)}" style="cursor:zoom-in">` : placeholder(pname(p), "PSF · " + colName(modalState.color), colHex(modalState.color))}</div>
       <div class="modal__body">
         <span class="product__cat">${catLabel(p.cat)}</span>
         <h2 class="modal__name">${esc(pname(p))}</h2>
@@ -382,6 +382,11 @@
       </div>`;
   }
   function closeModal() { $("#modal").classList.remove("on"); document.body.style.overflow = ""; }
+
+  /* ---------------- VOLLBILD-LIGHTBOX ---------------- */
+  function openLightbox(src) { const lb = $("#lightbox"); if (!lb || !src) return; $("#lb-media").innerHTML = `<img src="${esc(src)}" alt="">`; lb.classList.add("on"); document.body.style.overflow = "hidden"; }
+  function closeLightbox() { const lb = $("#lightbox"); if (!lb) return; lb.classList.remove("on"); $("#lb-media").innerHTML = ""; document.body.style.overflow = ""; }
+  const DROPMSG = { de: ["Bild geladen (Vorschau)", "Bitte ein Bild ablegen"], en: ["Image loaded (preview)", "Please drop an image"], ru: ["Изображение загружено (превью)", "Перетащи изображение"], es: ["Imagen cargada (vista previa)", "Suelta una imagen"] };
 
   /* ---------------- WARENKORB ---------------- */
   function saveCart() { localStorage.setItem("psf_cart", JSON.stringify(cart)); }
@@ -449,6 +454,9 @@
   function wire() {
     // Delegation
     document.addEventListener("click", (e) => {
+      const lbimg = e.target.closest("[data-lbimg]");
+      if (lbimg) { openLightbox(lbimg.getAttribute("data-lbimg")); return; }
+      if (e.target.closest("[data-lbclose]") || e.target.id === "lightbox") { closeLightbox(); return; }
       const openBtn = e.target.closest("[data-open]");
       if (openBtn) { openModal(openBtn.dataset.open); return; }
       const card = e.target.closest(".product");
@@ -506,7 +514,18 @@
     // Hard-Reload
     const hr = $("#hard-reload"); if (hr) hr.addEventListener("click", () => location.reload(true));
     // ESC
-    document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeModal(); closeCart(); if (mnav) mnav.classList.remove("on"); } });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeModal(); closeCart(); closeLightbox(); if (mnav) mnav.classList.remove("on"); } });
+    // Drag & Drop: Bild auf eine Produktkarte ziehen -> lokale Vorschau
+    const grid = $("#product-grid");
+    if (grid) {
+      grid.addEventListener("dragover", (e) => { const c = e.target.closest(".product"); if (c) { e.preventDefault(); c.style.outline = "2px dashed var(--accent)"; c.style.outlineOffset = "-2px"; } });
+      grid.addEventListener("dragleave", (e) => { const c = e.target.closest(".product"); if (c) c.style.outline = ""; });
+      grid.addEventListener("drop", (e) => { const c = e.target.closest(".product"); if (!c) return; e.preventDefault(); c.style.outline = "";
+        const f = e.dataTransfer.files && e.dataTransfer.files[0]; const m = DROPMSG[lang] || DROPMSG.de;
+        if (!f || !/^image\//.test(f.type)) { toast(m[1], false); return; }
+        const p = prod(c.dataset.id); if (p) { p.img = URL.createObjectURL(f); renderGrid(); toast(m[0]); } });
+      ["dragover", "drop"].forEach((ev) => window.addEventListener(ev, (e) => { if (e.target.closest(".product")) return; e.preventDefault(); }));
+    }
   }
 
   /* ---------------- VERÖFFENTLICHTE ARTIKEL (Lager → Shop) ----------------
